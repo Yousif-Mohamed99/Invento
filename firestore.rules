@@ -1,0 +1,185 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────
+    //  Helper Functions
+    // ─────────────────────────────────────────────
+
+    /// Returns true if the caller is authenticated.
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    /// Returns true if the caller's UID matches the given userId.
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    /// Returns true if the caller is the system administrator.
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email == 'yosif.m2017@gmail.com';
+    }
+
+    /// Returns true when the incoming data declares ownership equal to the caller.
+    function isCreatingWithOwnId() {
+      return request.resource.data.userId == request.auth.uid;
+    }
+
+    /// Checks that a field exists and is a non-empty string.
+    function isNonEmptyString(value) {
+      return value is string && value.size() > 0;
+    }
+
+    // ─────────────────────────────────────────────
+    //  merchants/{merchantId}
+    //  Schema:
+    //    uid, email, storeName, city, address,
+    //    createdAt, trialEndsAt, isSubscribed
+    // ─────────────────────────────────────────────
+    match /merchants/{merchantId} {
+      /// Only the merchant themselves can read their own document.
+      /// Admin has full access to all merchants.
+      allow read: if isOwner(merchantId) || isAdmin();
+
+      /// Allow a user to create their own merchant document on sign-up.
+      allow create: if isOwner(merchantId)
+                    && isNonEmptyString(request.resource.data.email)
+                    && isNonEmptyString(request.resource.data.storeName)
+                    && isNonEmptyString(request.resource.data.city)
+                    && isNonEmptyString(request.resource.data.address)
+                    // The uid field must match the document ID and the caller's uid.
+                    && request.resource.data.uid == merchantId;
+
+      /// Allow the merchant to update only their own mutable profile fields.
+      /// Immutable/Restricted fields: uid, email, createdAt, trialEndsAt, isSubscribed, plan.
+      /// Using affectedKeys() is more robust as it doesn't fail if a field is missing in the document.
+      allow update: if (isOwner(merchantId) && 
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                        'storeName', 'city', 'address', 'cityFees', 'updatedAt'
+                      ])) 
+                    || isAdmin();
+
+      /// Merchants cannot delete their own account document via the client.
+      allow delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────
+    //  products/{productId}
+    //  Schema:
+    //    userId, name, costPrice, sellingPrice,
+    //    stockQuantity, imageUrl, category, sizes,
+    //    createdAt, updatedAt
+    // ─────────────────────────────────────────────
+    match /products/{productId} {
+
+      /// A merchant may read any product that belongs to them.
+      allow read: if isAuthenticated()
+                  && resource.data.userId == request.auth.uid;
+
+      /// A merchant may create a product as long as they set themselves as owner.
+      allow create: if isAuthenticated()
+                    && isCreatingWithOwnId()
+                    && isNonEmptyString(request.resource.data.name)
+                    && request.resource.data.costPrice    is number
+                    && request.resource.data.sellingPrice is number
+                    && request.resource.data.stockQuantity is int
+                    // sellingPrice must be >= costPrice (basic business rule).
+                    && request.resource.data.sellingPrice >= request.resource.data.costPrice;
+
+      /// A merchant may update only their own products.
+      /// The userId and createdAt fields are immutable after creation.
+      allow update: if isAuthenticated()
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.userId    == resource.data.userId
+                    && request.resource.data.createdAt == resource.data.createdAt;
+
+      /// A merchant may delete only their own products.
+      allow delete: if isAuthenticated()
+                    && resource.data.userId == request.auth.uid;
+    }
+
+    // ─────────────────────────────────────────────
+    //  orders/{orderId}
+    //  Schema:
+    //    userId, customerName, customerPhone,
+    //    shippingAddress, city, items, deliveryFee,
+    //    totalAmount, status, source,
+    //    trackingNumber, createdAt
+    //
+    //  status values : pending | processing | shipped | delivered | cancelled
+    //  source values : instagram | facebook | tiktok | whatsapp | manual
+    // ─────────────────────────────────────────────
+    match /orders/{orderId} {
+
+      /// A merchant may read only their own orders.
+      allow read: if isAuthenticated()
+                  && resource.data.userId == request.auth.uid;
+
+      /// Validate an order on creation.
+      allow create: if isAuthenticated()
+                    && isCreatingWithOwnId()
+                    && isNonEmptyString(request.resource.data.customerName)
+                    && isNonEmptyString(request.resource.data.customerPhone)
+                    && isNonEmptyString(request.resource.data.shippingAddress)
+                    && isNonEmptyString(request.resource.data.city)
+                    && request.resource.data.items       is list
+                    && request.resource.data.items.size() > 0
+                    && request.resource.data.deliveryFee  is number
+                    && request.resource.data.totalAmount  is number
+                    && request.resource.data.totalAmount  > 0
+                    && isNonEmptyString(request.resource.data.status)
+                    && isNonEmptyString(request.resource.data.source)
+                    && request.resource.data.status in [
+                         'pending', 'processing', 'shipped', 'delivered', 'cancelled'
+                       ]
+                    && request.resource.data.source in [
+                         'instagram', 'facebook', 'tiktok', 'whatsapp', 'manual'
+                       ];
+
+      /// A merchant may update only their own orders' mutable fields.
+      /// userId and createdAt are immutable after creation.
+      /// Financial fields (totalAmount, deliveryFee) are immutable (use cancel
+      /// and recreate instead of editing amounts).
+      allow update: if isAuthenticated()
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.userId      == resource.data.userId
+                    && request.resource.data.createdAt   == resource.data.createdAt
+                    && request.resource.data.totalAmount  == resource.data.totalAmount
+                    && request.resource.data.deliveryFee  == resource.data.deliveryFee
+                    && request.resource.data.items        == resource.data.items
+                    // Validate that status on update is still a valid value.
+                    && request.resource.data.status in [
+                         'pending', 'processing', 'shipped', 'delivered', 'cancelled'
+                       ];
+
+      /// A merchant may delete only their own orders.
+      allow delete: if isAuthenticated()
+                    && resource.data.userId == request.auth.uid;
+    }
+
+    // ─────────────────────────────────────────────
+    //  support_tickets/{ticketId}
+    // ─────────────────────────────────────────────
+    match /support_tickets/{ticketId} {
+      /// Authenticated users can create tickets for themselves.
+      allow create: if isAuthenticated()
+                    && request.resource.data.userId == request.auth.uid
+                    && isNonEmptyString(request.resource.data.message);
+
+      /// Users can read their own tickets; admins can read all.
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+
+      /// Only admins can update or delete tickets.
+      allow update, delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────
+    //  Deny everything not explicitly allowed above.
+    // ─────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
