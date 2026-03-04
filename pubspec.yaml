@@ -53,6 +53,7 @@ dependencies:
   firebase_app_check: ^0.4.1+4
   equatable: ^2.0.8
   shared_preferences: ^2.5.3
+  dropdown_search: ^6.0.2
 
 dev_dependencies:
   flutter_test:
@@ -64,8 +65,7 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/images/app_logo.png" # مسار صورتك
-  adaptive_icon_background: "#ffffff" # لون خلفية الأيقونة في أندرويد (اختياري)
-  adaptive_icon_foreground: "assets/images/app_logo.png" # الصورة الأمامية (اختياري)
+  remove_alpha_ios: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

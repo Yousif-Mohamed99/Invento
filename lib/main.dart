@@ -57,6 +57,9 @@ class MyApp extends StatelessWidget {
           primaryColor: Colors.blueAccent,
           useMaterial3: true,
           fontFamily: 'Cairo',
+          progressIndicatorTheme: const ProgressIndicatorThemeData(
+            color: Colors.blueAccent,
+          ),
         ),
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,

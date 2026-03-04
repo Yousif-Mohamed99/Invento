@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:invento/features/home/presentation/pages/main_wrapper.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -20,7 +21,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _storeNameController = TextEditingController();
   final _addressController = TextEditingController();
-  bool _isAgreed = false;
 
   String _selectedCity = 'القاهرة';
   final List<String> _cities = [
@@ -123,6 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 15),
 
                 DropdownButtonFormField<String>(
+                  dropdownColor: Colors.white,
                   value: _selectedCity,
                   icon: const Icon(
                     Icons.arrow_drop_down,
@@ -187,30 +188,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(14),
-                        boxShadow:
-                            _isAgreed
-                                ? [
-                                  BoxShadow(
-                                    color: const Color(
-                                      0xFF1E3A8A,
-                                    ).withValues(alpha: 0.25),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ]
-                                : null,
-                        gradient:
-                            _isAgreed
-                                ? const LinearGradient(
-                                  colors: [
-                                    Color(0xFF2563EB),
-                                    Color(0xFF1E3A8A),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                )
-                                : null,
-                        color: _isAgreed ? null : Colors.grey.shade400,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFF1E3A8A,
+                            ).withValues(alpha: 0.25),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2563EB), Color(0xFF1E3A8A)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                       ),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -221,22 +212,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        onPressed:
-                            _isAgreed
-                                ? () {
-                                  if (_formKey.currentState!.validate()) {
-                                    context.read<AuthBloc>().add(
-                                      SignUpRequested(
-                                        email: _emailController.text,
-                                        password: _passwordController.text,
-                                        storeName: _storeNameController.text,
-                                        city: _selectedCity,
-                                        address: _addressController.text,
-                                      ),
-                                    );
-                                  }
-                                }
-                                : null,
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            context.read<AuthBloc>().add(
+                              SignUpRequested(
+                                email: _emailController.text,
+                                password: _passwordController.text,
+                                storeName: _storeNameController.text,
+                                city: _selectedCity,
+                                address: _addressController.text,
+                              ),
+                            );
+                          }
+                        },
                         child: const Text(
                           "إنشاء حسابي الآن",
                           style: TextStyle(
@@ -250,46 +238,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 5),
 
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Checkbox(
-                      value: _isAgreed,
-                      onChanged: (val) => setState(() => _isAgreed = val!),
-                      activeColor: const Color(0xFF2563EB),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _showPrivacyPolicy(context),
-                        child: const Text(
-                          "Invento أوافق على سياسة خصوصية",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF1E3A8A),
-                            decoration: TextDecoration.underline,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                // const Padding(
-                //   padding: EdgeInsets.symmetric(vertical: 10.0),
-                //   child: Divider(thickness: 1),
-                // ),
-
-                // const Text(
-                //   "أو سجل بواسطة",
-                //   textAlign: TextAlign.center,
-                //   style: TextStyle(color: Colors.blueGrey, fontSize: 13),
-                // ),
                 const SizedBox(height: 15),
 
                 // Google Register Button
@@ -319,7 +269,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 25),
+                const SizedBox(height: 10),
 
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 10.0),
@@ -340,21 +290,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _buildSocialIcon(
-                      icon: FontAwesomeIcons.facebook,
-                      color: const Color(0xFF1877F2),
-                      url: "https://facebook.com/merchant_hub",
-                    ),
-                    const SizedBox(width: 20),
-                    _buildSocialIcon(
                       icon: FontAwesomeIcons.instagram,
                       color: const Color(0xFFE4405F),
-                      url: "https://www.instagram.com/hub.merchant/",
+                      url: "https://www.instagram.com/invento_merchant/",
                     ),
                     const SizedBox(width: 20),
                     _buildSocialIcon(
                       icon: FontAwesomeIcons.whatsapp,
                       color: const Color(0xFF25D366),
-                      url: "https://wa.me/201551279642",
+                      url: "https://wa.me/${dotenv.env['SUPPORT_PHONE']}",
                     ),
                   ],
                 ),
@@ -427,66 +371,4 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-}
-
-void _showPrivacyPolicy(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true, // عشان تأخد مساحة كويسة
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (context) {
-      return DraggableScrollableSheet(
-        initialChildSize: 0.7, // تفتح لغاية 70% من الشاشة
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) {
-          return Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: SingleChildScrollView(
-              controller: scrollController,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 50,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    "سياسة خصوصية Invento",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const Divider(),
-                  const Text(
-                    "1. جمع البيانات:\nنجمع اسم المتجر، البريد الإلكتروني، وعنوان المخزن لتوفير خدمات الإدارة والمحاسبة.\n\n"
-                    "2. أمان البيانات:\nبياناتك مشفرة ومخزنة عبر خوادم Google Firebase الآمنة، ولا يمكن لأي طرف ثالث الوصول إليها.\n\n"
-                    "3. الفترة التجريبية والاشتراك:\nيمنح Invento فترة تجريبية 7 أيام، بعدها يتطلب التطبيق اشتراكاً شهرياً بقيمة 400 ج.م.\n\n"
-                    "4. إدارة الحساب:\nيمكنك تعديل بياناتك أو طلب حذف حسابك نهائياً عبر التواصل مع الدعم الفني مباشرة من داخل التطبيق.\n\n"
-                    "5. الدفع:\nتتم عمليات الدفع عبر بوابات دفع معتمدة، ولا نقوم بتخزين أي بيانات حساسة لبطاقاتك الائتمانية.",
-                    style: TextStyle(fontSize: 16, height: 1.5),
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                    child: const Text("فهمت ذلك"),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    },
-  );
 }

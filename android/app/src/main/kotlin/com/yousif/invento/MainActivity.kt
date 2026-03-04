@@ -1,4 +1,4 @@
-package com.example.invento
+package com.yousif.invento
 
 import io.flutter.embedding.android.FlutterActivity
 

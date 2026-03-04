@@ -40,10 +40,19 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
         );
         final int todayCount = getOrdersUseCase.countTodayOrders(activeOrders);
 
+        // Calculate monthly orders
+        final now = DateTime.now();
+        final int monthlyCount =
+            activeOrders.where((order) {
+              return order.createdAt.year == now.year &&
+                  order.createdAt.month == now.month;
+            }).length;
+
         emit(
           OrdersLoaded(
             orders: activeOrders,
             todayOrdersCount: todayCount,
+            monthlyOrdersCount: monthlyCount,
             todayEarnings: todayEarnings,
           ),
         );

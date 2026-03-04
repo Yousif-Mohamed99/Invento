@@ -9,7 +9,6 @@ import 'package:invento/features/home/presentation/pages/help_center_screen.dart
 import 'package:invento/features/home/presentation/pages/order_details_screen.dart';
 import 'package:invento/features/home/presentation/pages/social_order_creator.dart';
 import 'package:invento/features/home/presentation/pages/statistics_screen.dart';
-import 'package:invento/features/home/presentation/pages/subscription_paywall.dart';
 import 'package:invento/features/orders/domain/entities/order_entity.dart';
 import 'package:invento/features/orders/domain/repositories/orders_repository.dart';
 import 'package:invento/features/orders/domain/repositories/products_repository.dart';
@@ -24,6 +23,7 @@ import 'package:invento/features/products/presentation/pages/product_details_scr
 import 'package:invento/features/products/presentation/pages/products_screen.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:invento/core/models/subscription_plan.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -102,13 +102,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildPremiumHeader(user),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Transform.translate(
-                offset: const Offset(0, -30),
-                child: const TrialReminderBanner(),
-              ),
-            ),
+            const UsageLimitCard(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -801,6 +795,183 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
+class UsageLimitCard extends StatelessWidget {
+  const UsageLimitCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null && user.email == dotenv.env['ADMIN_EMAIL']) {
+      return const SizedBox.shrink();
+    }
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream:
+          FirebaseFirestore.instance
+              .collection('merchants')
+              .doc(user?.uid)
+              .snapshots(),
+      builder: (context, merchantSnapshot) {
+        if (!merchantSnapshot.hasData || !merchantSnapshot.data!.exists) {
+          return const SizedBox.shrink();
+        }
+
+        final data = merchantSnapshot.data!.data() as Map<String, dynamic>;
+        final String planName = data['plan'] ?? 'starter';
+        final plan = SubscriptionPlan.fromString(planName);
+
+        return BlocBuilder<ProductsBloc, ProductsState>(
+          builder: (context, productsState) {
+            return BlocBuilder<OrdersBloc, OrdersState>(
+              builder: (context, ordersState) {
+                int productCount = 0;
+                if (productsState is ProductsLoaded) {
+                  productCount = productsState.products.length;
+                }
+
+                int monthlyOrdersCount = 0;
+                if (ordersState is OrdersLoaded) {
+                  monthlyOrdersCount = ordersState.monthlyOrdersCount;
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Transform.translate(
+                    offset: const Offset(0, -30),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(
+                                Icons.assessment_rounded,
+                                color: Color(0xFF1E3A8A),
+                                size: 22,
+                              ),
+                              SizedBox(width: 10),
+                              Text(
+                                "حالة الاستهلاك",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E3A8A),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          _buildUsageItem(
+                            label: "المنتجات",
+                            current: productCount,
+                            limit: plan.productLimit,
+                            color: const Color(0xFF2563EB),
+                          ),
+                          const SizedBox(height: 15),
+                          _buildUsageItem(
+                            label: "الطلبات (شهرياً)",
+                            current: monthlyOrdersCount,
+                            limit: plan.orderLimit,
+                            color: const Color(0xFF10B981),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildUsageItem({
+    required String label,
+    required int current,
+    required int limit,
+    required Color color,
+  }) {
+    final double percentage = limit == -1 ? 0.0 : (current / limit).clamp(0, 1);
+    final bool isNearLimit = percentage >= 0.8;
+    final bool isExceeded = limit != -1 && current >= limit;
+
+    Color progressColor =
+        isExceeded ? Colors.red : (isNearLimit ? Colors.orange : color);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(
+              limit == -1 ? "$current / ∞" : "$current / $limit",
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: progressColor,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: LinearProgressIndicator(
+            value: limit == -1 ? 0.1 : percentage,
+            backgroundColor: Colors.grey[100],
+            valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+            minHeight: 8,
+          ),
+        ),
+        if (isNearLimit && !isExceeded && limit != -1)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              "لقد اقتربت من الحد الأقصى!",
+              style: TextStyle(color: Colors.orange[700], fontSize: 10),
+            ),
+          ),
+        if (isExceeded && limit != -1)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: const Text(
+              "تم الوصول للحد الأقصى، يرجى الترقية",
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 Future<void> _navigateToProductDetails(
   BuildContext context,
   String productId,
@@ -838,179 +1009,5 @@ Future<void> _navigateToProductDetails(
         context,
       ).showSnackBar(SnackBar(content: Text("خطأ: ${e.toString()}")));
     }
-  }
-}
-
-class TrialReminderBanner extends StatelessWidget {
-  const TrialReminderBanner({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user != null && user.email == dotenv.env['ADMIN_EMAIL']) {
-      return const SizedBox.shrink();
-    }
-    return StreamBuilder<DocumentSnapshot>(
-      stream:
-          FirebaseFirestore.instance
-              .collection('merchants')
-              .doc(user?.uid)
-              .snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          return const SizedBox.shrink();
-        }
-
-        final data = snapshot.data!.data() as Map<String, dynamic>;
-        final bool isSubscribed = data['isSubscribed'] ?? false;
-        final Timestamp? trialEndsAt = data['trialEndsAt'] as Timestamp?;
-        final Timestamp? subscriptionEndDate =
-            data['subscriptionEndDate'] as Timestamp?;
-
-        final now = DateTime.now();
-
-        if (isSubscribed) {
-          if (subscriptionEndDate != null) {
-            final remainingDays =
-                subscriptionEndDate.toDate().difference(now).inDays;
-            if (remainingDays <= 7 && remainingDays >= 0) {
-              return _buildBanner(
-                context,
-                title: "تجديد الاشتراك",
-                message: "ينتهي اشتراكك الحالي خلال $remainingDays أيام.",
-                color: Colors.redAccent,
-                email: user?.email,
-              );
-            }
-          }
-          return const SizedBox.shrink();
-        }
-
-        if (trialEndsAt != null) {
-          final remainingDays = trialEndsAt.toDate().difference(now).inDays;
-          if (remainingDays >= 0) {
-            return _buildBanner(
-              context,
-              title: "تنبيه انتهاء التجربة",
-              message:
-                  "باقي $remainingDays أيام فقط على انتهاء الفترة التجريبية.",
-              color: Colors.orange.shade700,
-              email: user?.email,
-            );
-          }
-        }
-
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
-  Widget _buildBanner(
-    BuildContext context, {
-    required String title,
-    required String message,
-    required Color color,
-    String? email,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 25),
-      child: Stack(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                colors: [color, color.withValues(alpha: 0.8)],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.auto_awesome_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        message,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 13,
-                          height: 1.4,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed:
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (_) => SubscriptionPaywall(
-                                email: email ?? "",
-                                isTrialExpired: false,
-                              ),
-                        ),
-                      ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: color,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    "اشترك الآن",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

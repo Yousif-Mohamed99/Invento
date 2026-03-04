@@ -1,13 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:invento/core/injection_container.dart';
 import 'package:invento/features/home/presentation/pages/orders_list_screen.dart';
 import 'package:invento/features/home/presentation/pages/profile_screen.dart';
 import 'package:invento/features/home/presentation/pages/subscription_paywall.dart';
-import 'package:invento/features/products/presentation/bloc/products_bloc.dart';
 import 'package:invento/features/products/presentation/pages/add_product_screen.dart';
 import 'package:invento/features/products/presentation/pages/products_screen.dart';
 import 'dashboard_screen.dart';
@@ -54,7 +51,6 @@ class _MainWrapperState extends State<MainWrapper> {
       if (userDoc.exists) {
         final data = userDoc.data()!;
         final bool isSubscribed = data['isSubscribed'] ?? false;
-        final Timestamp? trialEndsAt = data['trialEndsAt'] as Timestamp?;
         final Timestamp? subscriptionEndDate =
             data['subscriptionEndDate'] as Timestamp?;
 
@@ -64,11 +60,8 @@ class _MainWrapperState extends State<MainWrapper> {
           if (Timestamp.now().seconds > subscriptionEndDate.seconds) {
             isExpired = true;
           }
-        } else if (trialEndsAt != null) {
-          if (Timestamp.now().seconds > trialEndsAt.seconds) {
-            isExpired = true;
-          }
         }
+        // تم إلغاء فحص الفترة التجريبية بالوقت كما طلب العميل
 
         setState(() {
           _isTrialExpired = isExpired;
@@ -166,13 +159,7 @@ class _MainWrapperState extends State<MainWrapper> {
   void _navigateToAddProduct(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder:
-            (context) => BlocProvider<ProductsBloc>(
-              create: (context) => sl<ProductsBloc>(),
-              child: const AddProductScreen(),
-            ),
-      ),
+      MaterialPageRoute(builder: (context) => const AddProductScreen()),
     );
   }
 }

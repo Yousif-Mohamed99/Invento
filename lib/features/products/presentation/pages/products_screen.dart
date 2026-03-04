@@ -13,6 +13,8 @@ class ProductsScreen extends StatefulWidget {
 }
 
 class _ProductsScreenState extends State<ProductsScreen> {
+  String? _selectedCategory;
+
   @override
   void initState() {
     super.initState();
@@ -38,19 +40,145 @@ class _ProductsScreenState extends State<ProductsScreen> {
             if (state.products.isEmpty) {
               return _buildEmptyState();
             }
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: state.products.length,
-              itemBuilder: (context, index) {
-                final product = state.products[index];
-                return _buildProductCard(product);
-              },
+
+            // Extract unique categories from products
+            final categories =
+                state.products
+                    .where((p) => p.category != null && p.category!.isNotEmpty)
+                    .map((p) => p.category!)
+                    .toSet()
+                    .toList();
+
+            // Filter products by selected category
+            final filteredProducts =
+                _selectedCategory == null
+                    ? state.products
+                    : state.products
+                        .where((p) => p.category == _selectedCategory)
+                        .toList();
+
+            return Column(
+              children: [
+                // Category filter chips
+                if (categories.isNotEmpty) _buildCategoryFilter(categories),
+                // Product list
+                Expanded(
+                  child:
+                      filteredProducts.isEmpty
+                          ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off_rounded,
+                                  size: 60,
+                                  color: Colors.grey.shade300,
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  "لا توجد منتجات في هذه الفئة",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.blueGrey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                          : ListView.builder(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            itemCount: filteredProducts.length,
+                            itemBuilder: (context, index) {
+                              final product = filteredProducts[index];
+                              return _buildProductCard(product);
+                            },
+                          ),
+                ),
+              ],
             );
           } else if (state is ProductsError) {
             return Center(child: Text(state.message));
           }
           return const Center(child: Text("ابدأ بإضافة منتجاتك"));
         },
+      ),
+    );
+  }
+
+  Widget _buildCategoryFilter(List<String> categories) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            // "All" chip
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: ChoiceChip(
+                label: const Text("الكل"),
+                selected: _selectedCategory == null,
+                onSelected: (_) => setState(() => _selectedCategory = null),
+                selectedColor: const Color(0xFF2563EB),
+                backgroundColor: Colors.grey.shade100,
+                labelStyle: TextStyle(
+                  color:
+                      _selectedCategory == null
+                          ? Colors.white
+                          : Colors.blueGrey,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: BorderSide(
+                    color:
+                        _selectedCategory == null
+                            ? const Color(0xFF2563EB)
+                            : Colors.grey.shade200,
+                  ),
+                ),
+                showCheckmark: false,
+              ),
+            ),
+            // Category chips
+            ...categories.map(
+              (cat) => Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: ChoiceChip(
+                  label: Text(cat),
+                  selected: _selectedCategory == cat,
+                  onSelected: (_) => setState(() => _selectedCategory = cat),
+                  selectedColor: const Color(0xFF2563EB),
+                  backgroundColor: Colors.grey.shade100,
+                  labelStyle: TextStyle(
+                    color:
+                        _selectedCategory == cat
+                            ? Colors.white
+                            : Colors.blueGrey,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(
+                      color:
+                          _selectedCategory == cat
+                              ? const Color(0xFF2563EB)
+                              : Colors.grey.shade200,
+                    ),
+                  ),
+                  showCheckmark: false,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

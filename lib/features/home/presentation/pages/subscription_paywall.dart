@@ -176,13 +176,6 @@ class _SubscriptionPaywallState extends State<SubscriptionPaywall> {
                           color: isSelected ? primaryColor : Colors.black87,
                         ),
                       ),
-                      Text(
-                        plan.description,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
                     ],
                   ),
                   Text(
@@ -200,11 +193,15 @@ class _SubscriptionPaywallState extends State<SubscriptionPaywall> {
                 child: Divider(),
               ),
               _buildFeature(
-                "حتى ${plan.productLimit == -1 ? 'لا محدود' : plan.productLimit} منتج",
+                plan.productLimit == -1
+                    ? "منتجات غير محدودة"
+                    : "حتى ${plan.productLimit} منتج",
                 true,
               ),
               _buildFeature(
-                "${plan.orderLimit == -1 ? 'طلبات غير محدودة' : 'حتى ${plan.orderLimit} طلب شهرياً'}",
+                plan.orderLimit == -1
+                    ? "طلبات غير محدودة"
+                    : "حتى ${plan.orderLimit} طلب شهرياً",
                 true,
               ),
               _buildFeature("تقارير أداء متقدمة", plan.hasReports),

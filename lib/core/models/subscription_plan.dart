@@ -28,16 +28,16 @@ class SubscriptionPlan {
       description: "التاجر المبتدئ (جرب قبل ما تشتري)",
       price: "مجاني",
       productLimit: 10,
-      orderLimit: 30,
+      orderLimit: 20,
       hasReports: false,
-      hasSpecialSupport: false,
+      hasSpecialSupport: true,
     ),
     SubscriptionPlan(
       type: PlanType.growth,
       name: "النمو (Growth)",
       description: "التاجر المستقر (بيحتاج تنظيم)",
-      price: "500 ج.م",
-      productLimit: 50,
+      price: "300 ج.م",
+      productLimit: 20,
       orderLimit: -1, // Unlimited
       hasReports: true,
       hasSpecialSupport: false,
@@ -46,7 +46,7 @@ class SubscriptionPlan {
       type: PlanType.pro,
       name: "الاحترافية (Pro)",
       description: "المتاجر الكبيرة (Brand)",
-      price: "1500 ج.م",
+      price: "500 ج.م",
       productLimit: -1, // Unlimited
       orderLimit: -1, // Unlimited
       hasReports: true,

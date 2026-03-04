@@ -9,11 +9,13 @@ class OrdersLoading extends OrdersState {}
 class OrdersLoaded extends OrdersState {
   final List<OrderEntity> orders;
   final int todayOrdersCount;
+  final int monthlyOrdersCount;
   final double todayEarnings;
 
   OrdersLoaded({
     required this.orders,
     this.todayOrdersCount = 0,
+    this.monthlyOrdersCount = 0,
     this.todayEarnings = 0.0,
   });
 }

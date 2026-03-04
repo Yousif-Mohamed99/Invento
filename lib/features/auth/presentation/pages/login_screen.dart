@@ -272,6 +272,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const Text(
+                          "ليس لديك حساب؟",
+                          style: TextStyle(
+                            color: Colors.blueGrey,
+                            fontSize: 15,
+                          ),
+                        ),
                         TextButton(
                           onPressed: () {
                             Navigator.push(
@@ -288,13 +295,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),
-                          ),
-                        ),
-                        const Text(
-                          "ليس لديك حساب؟",
-                          style: TextStyle(
-                            color: Colors.blueGrey,
-                            fontSize: 15,
                           ),
                         ),
                       ],

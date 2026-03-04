@@ -64,13 +64,11 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0,
-                    vertical: 4.0,
-                  ),
+                  height: 32,
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEFF6FF), // Light blue background
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: const Color(
                         0xFF2563EB,
@@ -80,18 +78,20 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: selectedCity,
+                      dropdownColor: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
                       hint: const Text(
                         'المحافظة',
                         style: TextStyle(
                           color: Color(0xFF2563EB),
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       icon: const Icon(
                         Icons.keyboard_arrow_down_rounded,
                         color: Color(0xFF2563EB),
-                        size: 20,
+                        size: 18,
                       ),
                       items: [
                         const DropdownMenuItem<String>(
@@ -101,6 +101,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                             style: TextStyle(
                               color: Color(0xFF2563EB),
                               fontWeight: FontWeight.bold,
+                              fontSize: 12,
                             ),
                           ),
                         ),
@@ -112,6 +113,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                               style: const TextStyle(
                                 color: Color(0xFF1E3A8A),
                                 fontWeight: FontWeight.w500,
+                                fontSize: 12,
                               ),
                             ),
                           ),

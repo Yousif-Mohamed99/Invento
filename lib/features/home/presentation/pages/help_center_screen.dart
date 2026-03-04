@@ -191,7 +191,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 left: -50,
                 child: CircleAvatar(
                   radius: 100,
-                  backgroundColor: Colors.white.withOpacity(0.05),
+                  backgroundColor: Colors.white.withValues(alpha: 0.05),
                 ),
               ),
               Padding(
@@ -216,7 +216,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                         borderRadius: BorderRadius.circular(15),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 10,
                             offset: const Offset(0, 5),
                           ),
@@ -275,7 +275,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -350,43 +350,15 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               ),
               const SizedBox(width: 15),
               _buildQuickContact(
-                icon: Icons.email_rounded,
-                title: "البريد",
+                icon: FontAwesomeIcons.envelope,
+                title: "الايميل",
                 color: const Color(0xFF3B82F6),
                 onTap: _launchEmail,
               ),
             ],
           ),
           const SizedBox(height: 30),
-          const Text(
-            "تابعنا على منصاتنا",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1E3A8A),
-            ),
-          ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              _buildSocialButton(
-                icon: FontAwesomeIcons.tiktok,
-                color: Colors.black,
-                onTap: () => _launchSocial("https://tiktok.com/joo_elshafei"),
-              ),
 
-              const SizedBox(width: 15),
-              _buildSocialButton(
-                icon: FontAwesomeIcons.instagram,
-                color: const Color(0xFFE4405F),
-                onTap:
-                    () => _launchSocial(
-                      "https://www.instagram.com/invento_merchant/",
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 30),
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
@@ -395,7 +367,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               border: Border.all(color: Colors.white),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -407,7 +379,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 const Row(
                   children: [
                     Icon(
-                      Icons.message_rounded,
+                      FontAwesomeIcons.envelope,
                       color: Color(0xFF3B82F6),
                       size: 20,
                     ),
@@ -529,6 +501,39 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 30),
+          Center(
+            child: const Text(
+              "تابعنا على منصاتنا",
+
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E3A8A),
+              ),
+            ),
+          ),
+          const SizedBox(height: 15),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildSocialButton(
+                icon: FontAwesomeIcons.tiktok,
+                color: Colors.black,
+                onTap: () => _launchSocial("https://tiktok.com/joo_elshafei"),
+              ),
+
+              const SizedBox(width: 15),
+              _buildSocialButton(
+                icon: FontAwesomeIcons.instagram,
+                color: const Color(0xFFE4405F),
+                onTap:
+                    () => _launchSocial(
+                      "https://www.instagram.com/invento_merchant/",
+                    ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -551,14 +556,14 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             padding: const EdgeInsets.symmetric(vertical: 24),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: color.withOpacity(0.1), width: 1),
+              border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
             ),
             child: Column(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 28),
@@ -663,7 +668,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
       path: dotenv.env['ADMIN_EMAIL'],
-      queryParameters: {'subject': 'دعم فني - تطبيق بوكيت ميرشانت'},
+      queryParameters: {'subject': 'دعم فني - تطبيق Invento'},
     );
 
     try {

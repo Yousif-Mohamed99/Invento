@@ -50,6 +50,7 @@ class AuthRepositoryImpl implements AuthRepository {
         'createdAt': FieldValue.serverTimestamp(),
         'trialEndsAt': Timestamp.fromDate(trialExpiry),
         'isSubscribed': false,
+        'plan': 'starter',
       });
 
       await credential.user?.updateDisplayName(storeName);
@@ -118,6 +119,7 @@ class AuthRepositoryImpl implements AuthRepository {
             'createdAt': FieldValue.serverTimestamp(),
             'trialEndsAt': Timestamp.fromDate(trialExpiry),
             'isSubscribed': false,
+            'plan': 'starter',
           });
         }
       }

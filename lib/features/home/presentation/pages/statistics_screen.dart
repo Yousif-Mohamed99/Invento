@@ -264,7 +264,7 @@ class StatisticsScreen extends StatelessWidget {
   Widget _buildQuickStats(List<OrderEntity> orders) {
     final profitCalculator = CalculateProfitUseCase();
     double totalNetProfit = profitCalculator.executeTotal(orders);
-    double totalRevenue = orders.fold(0, (sum, item) => sum + item.totalAmount);
+    double totalRevenue = orders.fold(0, (acc, item) => acc + item.totalAmount);
 
     return Row(
       children: [
@@ -287,8 +287,8 @@ class StatisticsScreen extends StatelessWidget {
 
   Widget _buildSecondaryStats(List<OrderEntity> orders) {
     int totalOrders = orders.length;
-    int totalProductsSold = orders.fold(0, (sum, order) {
-      return sum + order.items.fold(0, (s, item) => s + item.quantity);
+    int totalProductsSold = orders.fold(0, (acc, order) {
+      return acc + order.items.fold(0, (s, item) => s + item.quantity);
     });
 
     return Row(
