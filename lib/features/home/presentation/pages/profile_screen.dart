@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:invento/features/home/presentation/pages/help_center_screen.dart
 import 'package:invento/features/home/presentation/pages/privacy_policy_screen.dart';
 import 'package:invento/features/products/presentation/bloc/orders_bloc.dart';
 import 'package:invento/features/products/presentation/bloc/orders_state.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -20,11 +22,11 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final List<String> egyptCities = [
-    "القاهرة",
-    "الجيزة",
-    "الإسكندرية",
-    "المنصوره",
-    "طنطا",
+    "Cairo",
+    "Giza",
+    "Alexandria",
+    "Mansoura",
+    "Tanta",
   ];
 
   Future<void> _updateSetting(String field, dynamic value) async {
@@ -38,8 +40,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("تم التحديث بنجاح"),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.changes_saved_successfully),
             backgroundColor: Colors.green,
           ),
         );
@@ -48,7 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("خطأ في التحديث: $e"),
+            content: Text("Update error: $e"),
             backgroundColor: Colors.red,
           ),
         );
@@ -60,12 +62,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return const Scaffold(body: Center(child: Text("يرجى تسجيل الدخول")));
+      return Scaffold(body: Center(child: Text(AppLocalizations.of(context)!.please_login)));
     }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(title: const Text("حسابي"), centerTitle: true),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.my_account),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: StreamBuilder<DocumentSnapshot>(
         stream:
             FirebaseFirestore.instance
@@ -73,13 +80,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 .doc(user.uid)
                 .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasError) return const Center(child: Text("حدث خطأ ما"));
+          if (snapshot.hasError) return Center(child: Text(AppLocalizations.of(context)!.error_occurred));
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
           final data = snapshot.data?.data() as Map<String, dynamic>? ?? {};
-          final String storeName = data['storeName'] ?? "اضغط لتسمية متجرك";
+          final String storeName = data['storeName'] ?? AppLocalizations.of(context)!.tap_to_name_store;
 
           Map<String, double> cityFees = {};
           if (data['cityFees'] != null) {
@@ -92,32 +99,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return SingleChildScrollView(
             child: Column(
               children: [
-                _buildHeader(user),
+                _buildHeader(context, user),
                 const SizedBox(height: 16),
-                _buildSectionTitle("إعدادات المتجر"),
-
+                _buildSectionTitle(context, AppLocalizations.of(context)!.store_settings),
                 _buildProfileItem(
+                  context: context,
                   icon: Icons.storefront,
-                  title: "اسم المتجر",
+                  title: AppLocalizations.of(context)!.store_name,
                   subtitle: storeName,
                   onTap: () => _showEditStoreNameDialog(storeName),
                 ),
 
                 _buildProfileItem(
+                  context: context,
                   icon: Icons.local_shipping_outlined,
-                  title: "أسعار شحن المحافظات",
-                  subtitle: "تحديد سعر مخصص لكل مدينة",
+                  title: AppLocalizations.of(context)!.regional_shipping_rates,
+                  subtitle: AppLocalizations.of(context)!.set_custom_price_per_city,
                   onTap: () => _showCitiesFeesDialog(context, cityFees),
                 ),
                 const SizedBox(height: 16),
-
-                _buildSectionTitle("التقارير والتحليلات"),
+                _buildSectionTitle(context, AppLocalizations.of(context)!.reports_and_analytics),
                 _buildStatisticsButton(context),
+
                 const SizedBox(height: 16),
-                _buildSectionTitle("الدعم والخصوصية"),
+                _buildSectionTitle(context, AppLocalizations.of(context)!.support_and_privacy),
                 _buildProfileItem(
+                  context: context,
                   icon: Icons.help_outline,
-                  title: "مركز المساعدة",
+                  title: AppLocalizations.of(context)!.help_center,
                   onTap:
                       () => Navigator.push(
                         context,
@@ -127,8 +136,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                 ),
                 _buildProfileItem(
+                  context: context,
                   icon: Icons.policy_outlined,
-                  title: "سياسة الخصوصية",
+                  title: AppLocalizations.of(context)!.privacy_policy,
                   onTap:
                       () => Navigator.push(
                         context,
@@ -158,16 +168,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            title: const Text(
-              "تعديل اسم المتجر",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            title: Text(
+              AppLocalizations.of(context)!.edit_store_name,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             content: TextField(
               controller: controller,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.grey.shade50,
-                hintText: "أدخل اسم العلامة التجارية",
+                hintText: AppLocalizations.of(context)!.enter_brand_name,
                 hintStyle: TextStyle(color: Colors.grey.shade400),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -190,9 +200,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  "إلغاء",
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                child: Text(
+                  AppLocalizations.of(context)!.cancel,
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
                 ),
               ),
               Container(
@@ -211,9 +221,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
                   ),
-                  child: const Text(
-                    "حفظ",
-                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  child: Text(
+                    AppLocalizations.of(context)!.save,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
                   ),
                 ),
               ),
@@ -256,9 +266,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
-                        "أسعار الشحن للمحافظات",
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.shipping_rates_per_city,
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
@@ -303,7 +313,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       fontSize: 14,
                                     ),
                                     decoration: InputDecoration(
-                                      suffixText: " ج.م",
+                                      suffixText: " ${AppLocalizations.of(context)!.egp_short}",
                                       suffixStyle: TextStyle(
                                         fontSize: 10,
                                         color: Colors.grey.shade400,
@@ -356,9 +366,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text(
-                        "إلغاء",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      child: Text(
+                        AppLocalizations.of(context)!.cancel,
+                        style: const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                     ),
                     Container(
@@ -381,9 +391,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             vertical: 10,
                           ),
                         ),
-                        child: const Text(
-                          "حفظ الكل",
-                          style: TextStyle(color: Colors.white, fontSize: 14),
+                        child: Text(
+                          AppLocalizations.of(context)!.save_all,
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
                         ),
                       ),
                     ),
@@ -394,7 +404,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-Widget _buildHeader(User? user) {
+Widget _buildHeader(BuildContext context, User? user) {
   return Container(
     color: Colors.white,
     width: double.infinity,
@@ -408,7 +418,7 @@ Widget _buildHeader(User? user) {
         ),
         const SizedBox(height: 12),
         Text(
-          user?.displayName ?? "التاجر",
+          user?.displayName ?? AppLocalizations.of(context)!.merchant,
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         Text(
@@ -420,11 +430,11 @@ Widget _buildHeader(User? user) {
   );
 }
 
-Widget _buildSectionTitle(String title) {
+Widget _buildSectionTitle(BuildContext context, String title) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
     child: Align(
-      alignment: Alignment.centerRight,
+      alignment: Alignment.centerLeft,
       child: Text(
         title,
         style: const TextStyle(
@@ -437,7 +447,10 @@ Widget _buildSectionTitle(String title) {
   );
 }
 
+
+
 Widget _buildProfileItem({
+  required BuildContext context,
   required IconData icon,
   required String title,
   String? subtitle,
@@ -481,9 +494,9 @@ Widget _buildLogoutButton(BuildContext context) {
       ),
       onPressed: () => _showLogoutConfirmDialog(context),
       icon: const Icon(Icons.logout),
-      label: const Text(
-        "تسجيل الخروج",
-        style: TextStyle(fontWeight: FontWeight.bold),
+      label: Text(
+        AppLocalizations.of(context)!.sign_out,
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
     ),
   );
@@ -494,12 +507,12 @@ void _showLogoutConfirmDialog(BuildContext context) {
     context: context,
     builder:
         (context) => AlertDialog(
-          title: const Text("تسجيل الخروج"),
-          content: const Text("هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟"),
+        title: Text(AppLocalizations.of(context)!.sign_out),
+        content: Text(AppLocalizations.of(context)!.confirm_sign_out_desc),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("إلغاء"),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -518,7 +531,7 @@ void _showLogoutConfirmDialog(BuildContext context) {
                   );
                 }
               },
-              child: const Text("خروج", style: TextStyle(color: Colors.white)),
+              child: Text(AppLocalizations.of(context)!.sign_out_btn, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -541,8 +554,8 @@ Widget _buildStatisticsButton(BuildContext context) {
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("جاري تحميل البيانات، برجاء المحاولة مرة أخرى"),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.loading_data_wait),
             ),
           );
         }
@@ -579,20 +592,20 @@ Widget _buildStatisticsButton(BuildContext context) {
               ),
             ),
             const SizedBox(width: 15),
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  " إحصائيات التاجر",
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.merchant_statistics,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  "تحليل الأرباح، مصادر الطلبات، والنمو",
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                  AppLocalizations.of(context)!.analytics_desc,
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ],
             ),

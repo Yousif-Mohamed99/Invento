@@ -7,6 +7,7 @@ import 'package:invento/features/orders/domain/entities/order_entity.dart';
 import 'package:invento/features/orders/domain/usecases/calculate_profit_usecase.dart';
 import 'package:invento/features/home/presentation/pages/subscription_paywall.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class StatisticsScreen extends StatelessWidget {
   final List<OrderEntity> orders;
@@ -22,9 +23,9 @@ class StatisticsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          "إحصائيات الأداء",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          AppLocalizations.of(context)!.performance_statistics,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: Colors.transparent,
         foregroundColor: const Color(0xFF1E3A8A),
@@ -49,18 +50,18 @@ class StatisticsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionTitle("الملخص المالي"),
+                _buildSectionTitle(context, AppLocalizations.of(context)!.financial_summary),
                 const SizedBox(height: 15),
-                _buildQuickStats(activeOrders),
+                _buildQuickStats(context, activeOrders),
                 const SizedBox(height: 15),
-                _buildSecondaryStats(activeOrders),
+                _buildSecondaryStats(context, activeOrders),
 
                 const SizedBox(height: 30),
-                _buildSectionTitle("مصادر الطلبات (Order Sources)"),
+                _buildSectionTitle(context, AppLocalizations.of(context)!.order_sources),
                 const SizedBox(height: 15),
                 _wrapWithLock(
                   context,
-                  child: _buildSourcePieChart(activeOrders),
+                  child: _buildSourcePieChart(context, activeOrders),
                   isLocked:
                       !plan.hasReports &&
                       user?.email != dotenv.env['ADMIN_EMAIL'],
@@ -68,15 +69,15 @@ class StatisticsScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 30),
-                _buildSectionTitle("تحليل المنتجات"),
+                _buildSectionTitle(context, AppLocalizations.of(context)!.product_analysis),
                 const SizedBox(height: 15),
                 _wrapWithLock(
                   context,
                   child: Column(
                     children: [
-                      _buildTopProductCard(activeOrders),
+                      _buildTopProductCard(context, activeOrders),
                       const SizedBox(height: 15),
-                      _buildLeastProductCard(activeOrders),
+                      _buildLeastProductCard(context, activeOrders),
                     ],
                   ),
                   isLocked:
@@ -86,11 +87,11 @@ class StatisticsScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 30),
-                _buildSectionTitle("المحافظات الأكثر طلباً"),
+                _buildSectionTitle(context, AppLocalizations.of(context)!.most_requested_governorates),
                 const SizedBox(height: 15),
                 _wrapWithLock(
                   context,
-                  child: _buildTopProvinces(activeOrders),
+                  child: _buildTopProvinces(context, activeOrders),
                   isLocked:
                       !plan.hasReports &&
                       user?.email != dotenv.env['ADMIN_EMAIL'],
@@ -136,9 +137,9 @@ class StatisticsScreen extends StatelessWidget {
                       size: 40,
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      "هذه الميزة غير متوفرة في خطة البداية",
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context)!.feature_not_available_starter,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.blueGrey,
                       ),
@@ -156,8 +157,8 @@ class StatisticsScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      child: const Text(
-                        "ترقية الخطة الآن",
+                      child: Text(
+                        AppLocalizations.of(context)!.upgrade_plan_now,
                         style: TextStyle(
                           color: Colors.blueAccent,
                           fontWeight: FontWeight.bold,
@@ -174,7 +175,7 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopProvinces(List<OrderEntity> orders) {
+  Widget _buildTopProvinces(BuildContext context, List<OrderEntity> orders) {
     if (orders.isEmpty) return const SizedBox();
 
     Map<String, int> cityStats = {};
@@ -185,7 +186,7 @@ class StatisticsScreen extends StatelessWidget {
     }
 
     if (cityStats.isEmpty) {
-      return const Center(child: Text("لا توجد بيانات للمناطق حالياً"));
+      return Center(child: Text(AppLocalizations.of(context)!.no_area_data));
     }
 
     var sortedCities =
@@ -223,7 +224,7 @@ class StatisticsScreen extends StatelessWidget {
                   entry.key,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                subtitle: const Text("محافظة / مدينة"),
+                subtitle: Text(AppLocalizations.of(context)!.governorate_city),
                 trailing: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -234,7 +235,7 @@ class StatisticsScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    "${entry.value} طلب",
+                    AppLocalizations.of(context)!.orders_count(entry.value),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.blueGrey,
@@ -247,7 +248,7 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
@@ -261,7 +262,7 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickStats(List<OrderEntity> orders) {
+  Widget _buildQuickStats(BuildContext context, List<OrderEntity> orders) {
     final profitCalculator = CalculateProfitUseCase();
     double totalNetProfit = profitCalculator.executeTotal(orders);
     double totalRevenue = orders.fold(0, (acc, item) => acc + item.totalAmount);
@@ -269,15 +270,17 @@ class StatisticsScreen extends StatelessWidget {
     return Row(
       children: [
         _statCard(
-          "صافي الربح",
-          "${totalNetProfit.toStringAsFixed(0)} ج.م",
+          context,
+          AppLocalizations.of(context)!.net_profit,
+          "${totalNetProfit.toStringAsFixed(0)} EGP",
           Colors.green,
           Icons.account_balance_wallet_outlined,
         ),
         const SizedBox(width: 12),
         _statCard(
-          "إجمالي المبيعات",
-          "${totalRevenue.toStringAsFixed(0)} ج.م",
+          context,
+          AppLocalizations.of(context)!.total_revenue,
+          "${totalRevenue.toStringAsFixed(0)} EGP",
           Colors.orange,
           Icons.payments_outlined,
         ),
@@ -285,7 +288,7 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSecondaryStats(List<OrderEntity> orders) {
+  Widget _buildSecondaryStats(BuildContext context, List<OrderEntity> orders) {
     int totalOrders = orders.length;
     int totalProductsSold = orders.fold(0, (acc, order) {
       return acc + order.items.fold(0, (s, item) => s + item.quantity);
@@ -294,14 +297,16 @@ class StatisticsScreen extends StatelessWidget {
     return Row(
       children: [
         _statCard(
-          "إجمالي الطلبات",
+          context,
+          AppLocalizations.of(context)!.total_orders,
           totalOrders.toString(),
           Colors.blueAccent,
           Icons.shopping_bag_outlined,
         ),
         const SizedBox(width: 12),
         _statCard(
-          "المنتجات المباعة",
+          context,
+          AppLocalizations.of(context)!.products_sold,
           totalProductsSold.toString(),
           Colors.purple,
           Icons.inventory_2_outlined,
@@ -310,7 +315,7 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _statCard(String title, String value, Color color, IconData icon) {
+  Widget _statCard(BuildContext context, String title, String value, Color color, IconData icon) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -354,9 +359,9 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSourcePieChart(List<OrderEntity> orders) {
+  Widget _buildSourcePieChart(BuildContext context, List<OrderEntity> orders) {
     if (orders.isEmpty) {
-      return const Center(child: Text("لا توجد بيانات حالياً"));
+      return Center(child: Text(AppLocalizations.of(context)!.no_data_available));
     }
 
     Map<OrderSource, int> counts = {};
@@ -403,7 +408,7 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopProductCard(List<OrderEntity> orders) {
+  Widget _buildTopProductCard(BuildContext context, List<OrderEntity> orders) {
     if (orders.isEmpty) return const SizedBox();
 
     Map<String, int> productSales = {};
@@ -458,8 +463,8 @@ class StatisticsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "الأكثر مبيعاً",
+                Text(
+                  AppLocalizations.of(context)!.bestselling,
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
@@ -477,7 +482,7 @@ class StatisticsScreen extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  "تم بيع $salesCount قطعة",
+                  AppLocalizations.of(context)!.items_sold_count(salesCount),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 13,
@@ -492,7 +497,7 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLeastProductCard(List<OrderEntity> orders) {
+  Widget _buildLeastProductCard(BuildContext context, List<OrderEntity> orders) {
     if (orders.isEmpty) return const SizedBox();
 
     Map<String, int> productSales = {};
@@ -550,8 +555,8 @@ class StatisticsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "الأقل مبيعاً",
+                Text(
+                  AppLocalizations.of(context)!.least_selling,
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
@@ -569,7 +574,7 @@ class StatisticsScreen extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  "تم بيع $salesCount قطعة",
+                  AppLocalizations.of(context)!.items_sold_count(salesCount),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 13,

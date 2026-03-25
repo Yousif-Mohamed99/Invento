@@ -19,7 +19,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
-      throw "حدث خطأ غير متوقع، حاول مرة أخرى";
+      throw "An unexpected error occurred, please try again";
     }
   }
 
@@ -29,10 +29,9 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String storeName,
     required String city,
-    required String address,
   }) async {
     try {
-      // 1. إنشاء الحساب في Firebase Auth
+      // 1. Create account in Firebase Auth
       final credential = await firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -46,7 +45,6 @@ class AuthRepositoryImpl implements AuthRepository {
         'email': email,
         'storeName': storeName,
         'city': city,
-        'address': address,
         'createdAt': FieldValue.serverTimestamp(),
         'trialEndsAt': Timestamp.fromDate(trialExpiry),
         'isSubscribed': false,
@@ -59,7 +57,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
-      throw "فشل تسجيل الحساب، حاول مرة أخرى.";
+      throw "Account registration failed, please try again.";
     }
   }
 
@@ -76,7 +74,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
-      throw "حدث خطأ أثناء إرسال رابط استعادة كلمة المرور";
+      throw "An error occurred while sending the password reset link";
     }
   }
 
@@ -87,7 +85,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
-        throw "تم إلغاء تسجيل الدخول";
+        throw "Sign in cancelled";
       }
 
       final GoogleSignInAuthentication googleAuth =
@@ -113,9 +111,8 @@ class AuthRepositoryImpl implements AuthRepository {
           await firestore.collection('merchants').doc(user.uid).set({
             'uid': user.uid,
             'email': user.email,
-            'storeName': user.displayName ?? "متجري",
-            'city': "غير محدد",
-            'address': "غير محدد",
+            'storeName': user.displayName ?? "My Store",
+            'city': "Not Specified",
             'createdAt': FieldValue.serverTimestamp(),
             'trialEndsAt': Timestamp.fromDate(trialExpiry),
             'isSubscribed': false,
@@ -128,26 +125,26 @@ class AuthRepositoryImpl implements AuthRepository {
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
-      throw "فشل تسجيل الدخول بجوجل، حاول مرة أخرى.";
+      throw "Google sign in failed, please try again.";
     }
   }
 
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
-        return "الحساب ده مش موجود، تأكد من الإيميل.";
+        return "User not found, please check your email.";
       case 'wrong-password':
-        return "كلمة المرور غلط.";
+        return "Wrong password.";
       case 'email-already-in-use':
-        return "الإيميل ده متسجل قبل كدة.";
+        return "Email already in use.";
       case 'network-request-failed':
-        return "مفيش اتصال بالإنترنت، جرب تاني.";
+        return "Network request failed, please try again.";
       case 'invalid-email':
-        return "صيغة الإيميل غلط.";
+        return "Invalid email format.";
       case 'weak-password':
-        return "كلمة المرور ضعيفة جداً.";
+        return "Password is too weak.";
       default:
-        return "عذراً، حصلت مشكلة في عملية الدخول.";
+        return "Sorry, an error occurred during the login process.";
     }
   }
 }

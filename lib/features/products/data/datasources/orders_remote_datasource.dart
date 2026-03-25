@@ -20,7 +20,7 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
 
   String get _currentUserId {
     final user = auth.currentUser;
-    if (user == null) throw Exception("يجب تسجيل الدخول أولاً");
+    if (user == null) throw Exception("User must be logged in first");
     return user.uid;
   }
 
@@ -73,11 +73,11 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
 
     // Verify ownership before updating.
     final doc = await _ordersCollection.doc(orderId).get();
-    if (!doc.exists) throw Exception("الطلب غير موجود.");
+    if (!doc.exists) throw Exception("Order not found.");
 
     final data = doc.data() as Map<String, dynamic>;
     if (data['userId'] != userId) {
-      throw Exception("ليس لديك صلاحية تعديل هذا الطلب.");
+      throw Exception("You do not have permission to modify this order.");
     }
 
     await _ordersCollection.doc(orderId).update({'status': newStatus});

@@ -12,6 +12,7 @@ import 'package:invento/features/products/presentation/bloc/orders_event.dart';
 import 'package:invento/features/products/presentation/bloc/products_bloc.dart';
 import 'package:invento/features/products/presentation/bloc/products_event.dart';
 import 'package:invento/features/products/presentation/bloc/products_state.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CreateOrderScreen extends StatefulWidget {
   const CreateOrderScreen({super.key, this.scrollController});
@@ -28,7 +29,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   String _customerName = '';
   String _customerPhone = '';
   String _customerAddress = '';
-  String _selectedCity = 'القاهرة';
+  String _selectedCity = 'Cairo';
   double _deliveryFee = 0.0;
   int _quantity = 1;
   OrderSource _selectedSource = OrderSource.facebook;
@@ -71,13 +72,13 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       } else {
         setState(() {
           _shippingFees = {
-            'القاهرة': 50.0,
-            'الجيزة': 50.0,
-            'المنصوره': 70.0,
-            'الاسكندريه': 80.0,
-            'طنطا': 80.0,
+            'Cairo': 50.0,
+            'Giza': 50.0,
+            'Mansoura': 70.0,
+            'Alexandria': 80.0,
+            'Tanta': 80.0,
           };
-          _selectedCity = 'القاهرة';
+          _selectedCity = 'Cairo';
           _deliveryFee = 50.0;
           _isLoadingFees = false;
         });
@@ -95,9 +96,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       appBar:
           widget.scrollController == null
               ? AppBar(
-                title: const Text(
-                  "إنشاء أوردر جديد",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                title: Text(
+                  AppLocalizations.of(context)!.create_new_order,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 backgroundColor: Colors.white,
                 elevation: 0,
@@ -125,7 +126,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 children: [
                   // --- Product Details Card ---
                   _buildSectionCard(
-                    title: "تفاصيل المنتج",
+                    title: AppLocalizations.of(context)!.product_details,
                     icon: Icons.inventory_2_rounded,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -136,7 +137,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                           menuMaxHeight: 400,
                           borderRadius: BorderRadius.circular(20),
                           decoration: InputDecoration(
-                            labelText: "اختر المنتج من المخزن",
+                            labelText: AppLocalizations.of(context)!.select_product_stock_hint,
                             labelStyle: const TextStyle(color: Colors.blueGrey),
                             filled: true,
                             fillColor: Colors.grey.shade50,
@@ -178,41 +179,38 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                                       children: [
                                         Flexible(
                                           child: Text(
-                                            "${p.name} (${p.sellingPrice} ج.م)",
+                                            "${p.name} (${p.sellingPrice} ${AppLocalizations.of(context)!.egp})",
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
-                                              decoration:
-                                                  isOutOfStock
-                                                      ? TextDecoration
-                                                          .lineThrough
-                                                      : null,
-                                              color:
-                                                  isOutOfStock
-                                                      ? Colors.grey
-                                                      : Colors.black,
+                                              decoration: isOutOfStock
+                                                  ? TextDecoration.lineThrough
+                                                  : null,
+                                              color: isOutOfStock
+                                                  ? Colors.grey
+                                                  : Colors.black,
                                             ),
                                           ),
                                         ),
                                         const SizedBox(width: 5),
                                         isOutOfStock
-                                            ? const Text(
-                                              "نفذت",
-                                              style: TextStyle(
-                                                color: Colors.red,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            )
+                                            ? Text(
+                                                AppLocalizations.of(context)!.out_of_stock_label,
+                                                style: const TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              )
                                             : Text(
-                                              "متاح: ${p.stockQuantity}",
-                                              style: TextStyle(
-                                                color:
-                                                    p.stockQuantity < 5
-                                                        ? Colors.orange
-                                                        : Colors.green,
-                                                fontSize: 10,
+                                                AppLocalizations.of(context)!.available_count(p.stockQuantity),
+                                                style: TextStyle(
+                                                  color:
+                                                      p.stockQuantity < 5
+                                                          ? Colors.orange
+                                                          : Colors.green,
+                                                  fontSize: 10,
+                                                ),
                                               ),
-                                            ),
                                       ],
                                     ),
                                   ),
@@ -226,11 +224,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                               }),
                           validator:
                               (value) =>
-                                  value == null ? "برجاء اختيار منتج" : null,
+                                  value == null ? AppLocalizations.of(context)!.please_select_product : null,
                         ),
                         const SizedBox(height: 15),
 
-                        // 2. اختيار المقاس (يظهر فقط إذا كان المنتج يدعم المقاسات)
+                        // 2. Select size (shows only if product supports sizes)
                         if (_selectedProduct != null &&
                             _selectedProduct!.sizes != null &&
                             _selectedProduct!.sizes!.isNotEmpty) ...[
@@ -239,7 +237,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                             dropdownColor: Colors.white,
                             borderRadius: BorderRadius.circular(20),
                             decoration: InputDecoration(
-                              labelText: "المقاس المتاح",
+                              labelText: AppLocalizations.of(context)!.available_size_label,
                               labelStyle: const TextStyle(
                                 color: Colors.blueGrey,
                               ),
@@ -275,7 +273,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                                     value: s.size,
                                     enabled: !isSizeEmpty,
                                     child: Text(
-                                      "${s.size} ${isSizeEmpty ? '(نفذ)' : '(متاح: ${s.quantity})'}",
+                                      "${s.size} ${isSizeEmpty ? '(${AppLocalizations.of(context)!.empty_label})' : '(${AppLocalizations.of(context)!.available_label}: ${s.quantity})'}",
                                     ),
                                   );
                                 }).toList(),
@@ -286,12 +284,12 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                                 }),
                             validator:
                                 (val) =>
-                                    val == null ? "برجاء اختيار المقاس" : null,
+                                    val == null ? AppLocalizations.of(context)!.please_select_size : null,
                           ),
                           const SizedBox(height: 15),
                         ],
 
-                        // 3. قسم الكمية
+                        // 3. Quantity section
                         _buildQuantitySection(),
                       ],
                     ),
@@ -301,22 +299,22 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
                   // --- Customer Info Card ---
                   _buildSectionCard(
-                    title: "بيانات العميل والشحن",
+                    title: AppLocalizations.of(context)!.customer_shipping_info,
                     icon: Icons.local_shipping_rounded,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _buildTextField(
-                          "اسم العميل",
+                          AppLocalizations.of(context)!.customer_name_label,
                           (val) => _customerName = val,
                         ),
                         _buildTextField(
-                          "رقم الهاتف",
+                          AppLocalizations.of(context)!.phone_number,
                           (val) => _customerPhone = val,
                           isPhone: true,
                         ),
                         _buildTextField(
-                          "عنوان الشحن بالتفصيل",
+                          AppLocalizations.of(context)!.detailed_address,
                           (val) => _customerAddress = val,
                         ),
                         Row(
@@ -327,7 +325,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                                 dropdownColor: Colors.white,
                                 borderRadius: BorderRadius.circular(20),
                                 decoration: InputDecoration(
-                                  labelText: "المحافظة",
+                                  labelText: AppLocalizations.of(context)!.governorate_label,
                                   labelStyle: const TextStyle(
                                     color: Colors.blueGrey,
                                   ),
@@ -379,8 +377,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                                   color: Color(0xFF2563EB),
                                 ),
                                 decoration: InputDecoration(
-                                  labelText: "مصاريف الشحن",
-                                  suffixText: "ج.م",
+                                  labelText: AppLocalizations.of(context)!.shipping_fees_label,
+                                  suffixText: AppLocalizations.of(context)!.egp,
                                   filled: true,
                                   fillColor: Colors.blue.shade50,
                                   border: OutlineInputBorder(
@@ -400,17 +398,22 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
                   // --- Source Card ---
                   _buildSectionCard(
-                    title: "مصدر الطلب",
+                    title: AppLocalizations.of(context)!.order_source,
                     icon: Icons.share_rounded,
                     child: DropdownButtonFormField<OrderSource>(
                       value: _selectedSource,
+                      dropdownColor: Colors.white,
                       decoration: InputDecoration(
-                        labelText: "مصدر الطلب",
+                        labelText: AppLocalizations.of(context)!.order_source,
                         filled: true,
-                        fillColor: Colors.grey.shade50,
+                        fillColor: Colors.white,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
+                          borderSide: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
                         ),
                         prefixIcon: const Icon(
                           Icons.public,
@@ -459,8 +462,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: const Text(
-                        "تأكيد الطلب وتحديث المخزن",
+                      child: Text(
+                        AppLocalizations.of(context)!.confirm_order_stock_update,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -522,7 +525,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
         onChanged: onChange,
         validator:
-            (val) => val == null || val.isEmpty ? "هذا الحقل مطلوب" : null,
+            (val) => val == null || val.isEmpty ? AppLocalizations.of(context)!.field_required_error : null,
       ),
     );
   }
@@ -572,20 +575,20 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
   void _submitOrder() {
     if (_formKey.currentState!.validate() && _selectedProduct != null) {
-      // 1. التحقق من اختيار المقاس (إذا كان المنتج يحتوي على مقاسات)
+      // 1. Check size selection (if product has sizes)
       if (_selectedProduct!.sizes != null &&
           _selectedProduct!.sizes!.isNotEmpty &&
           _selectedSize == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("برجاء اختيار المقاس المطلوب أولاً"),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.select_required_size_first),
             backgroundColor: Colors.orange,
           ),
         );
         return;
       }
 
-      // 2. حساب الإجماليات
+      // 2. Calculate totals
       double productsTotal = _selectedProduct!.sellingPrice * _quantity;
       double finalTotal = productsTotal + _deliveryFee;
 
@@ -635,8 +638,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   color: Colors.green,
                   size: 60,
                 ),
-                content: const Text(
-                  "تم تسجيل الأوردر بنجاح!",
+                content: Text(
+                  AppLocalizations.of(context)!.order_registered_success,
                   textAlign: TextAlign.center,
                 ),
                 actions: [
@@ -663,9 +666,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                             ),
                           );
                         },
-                        child: const Text(
-                          "عرض بوليصة الشحن",
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)!.show_invoice_btn,
+                          style: const TextStyle(
                             fontSize: 16,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -675,13 +678,13 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       const SizedBox(height: 8),
                       TextButton(
                         onPressed: () {
-                          Navigator.pop(context); // قفل الـ Dialog
-                          Navigator.pop(context); // العودة للـ Dashboard
+                          Navigator.pop(context); // Close Dialog
+                          Navigator.pop(context); // Back to Home
                         },
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            "العودة للرئيسية",
-                            style: TextStyle(
+                            AppLocalizations.of(context)!.back_to_home_btn,
+                            style: const TextStyle(
                               color: Colors.blueGrey,
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -714,9 +717,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "الكمية المطلوبة",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        Text(
+          AppLocalizations.of(context)!.required_quantity_label,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
         ),
         const SizedBox(height: 10),
         Container(
@@ -747,7 +750,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   ),
                   if (_selectedProduct != null)
                     Text(
-                      "من أصل $maxAvailable",
+                      AppLocalizations.of(context)!.out_of_count(maxAvailable),
                       style: TextStyle(
                         fontSize: 10,
                         color: Colors.grey.shade600,
@@ -761,7 +764,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 onPressed: () {
                   if (_selectedProduct == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("برجاء اختيار منتج أولاً")),
+                      SnackBar(content: Text(AppLocalizations.of(context)!.please_select_product_first)),
                     );
                   } else if (_quantity < maxAvailable) {
                     setState(() => _quantity++);

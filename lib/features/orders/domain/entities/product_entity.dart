@@ -19,10 +19,10 @@ class ProductSize extends Equatable {
 class ProductEntity extends Equatable {
   final String? id;
   final String name;
-  final double costPrice; // سعر التكلفة (عشان احسب ارباح)
-  final double sellingPrice; // سعر البيع
-  final int stockQuantity; // الكمية في المخزن
-  final String? imageUrl; // صورة المنتج
+  final double costPrice; // Cost price (for profit calculation)
+  final double sellingPrice; // Selling price
+  final int stockQuantity; // Stock quantity in warehouse
+  final String? imageUrl; // Product image URL
   final String? category;
   final List<ProductSize>? sizes;
 

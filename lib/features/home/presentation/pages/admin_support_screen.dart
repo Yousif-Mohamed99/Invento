@@ -12,14 +12,15 @@ class AdminTicketsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("لوحة الإدارة والدعم"),
+        title: const Text("Admin & Support Dashboard"),
         centerTitle: true,
-        backgroundColor: Colors.redAccent,
-        elevation: 2,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.redAccent,
       ),
       body: Column(
         children: [
-          // --- قسم البحث والتفعيل المباشر ---
+          // --- Search and Direct Activation Section ---
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
@@ -28,7 +29,7 @@ class AdminTicketsScreen extends StatelessWidget {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: "فعل اشتراك بالإيميل مباشرة...",
+                      hintText: "Activate subscription by email...",
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -50,7 +51,7 @@ class AdminTicketsScreen extends StatelessWidget {
           ),
           const Divider(),
 
-          // --- قائمة التذاكر (رسائل الدعم) ---
+          // --- Tickets List (Support Messages) ---
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream:
@@ -64,7 +65,7 @@ class AdminTicketsScreen extends StatelessWidget {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("لا توجد رسائل حالياً"));
+                  return const Center(child: Text("No messages currently"));
                 }
 
                 final tickets = snapshot.data!.docs;
@@ -75,7 +76,7 @@ class AdminTicketsScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final data = tickets[index].data() as Map<String, dynamic>;
                     final String docId = tickets[index].id;
-                    final String email = data['userEmail'] ?? "بدون إيميل";
+                    final String email = data['userEmail'] ?? "No Email";
                     final String message = data['message'] ?? "";
                     final Timestamp? timestamp = data['createdAt'];
                     final String status = data['status'] ?? "open";
@@ -100,7 +101,7 @@ class AdminTicketsScreen extends StatelessWidget {
                         ),
                         subtitle: Text(
                           timestamp != null
-                              ? timeago.format(timestamp.toDate(), locale: 'ar')
+                              ? timeago.format(timestamp.toDate(), locale: 'en')
                               : "",
                           style: const TextStyle(fontSize: 12),
                         ),
@@ -111,7 +112,7 @@ class AdminTicketsScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  "الرسالة:",
+                                  "Message:",
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 5),
@@ -138,8 +139,8 @@ class AdminTicketsScreen extends StatelessWidget {
                                       ),
                                       child: Text(
                                         status == "open"
-                                            ? "تم الحل"
-                                            : "إعادة فتح",
+                                            ? "Resolved"
+                                            : "Reopen",
                                       ),
                                     ),
                                     _buildActionButton(
@@ -180,7 +181,7 @@ class AdminTicketsScreen extends StatelessWidget {
     );
   }
 
-  // --- ميثودات المساعدة (Helper Methods) ---
+  // --- Helper Methods ---
 
   Widget _buildActionButton({
     required IconData icon,
@@ -195,7 +196,7 @@ class AdminTicketsScreen extends StatelessWidget {
     if (email.isEmpty) return;
 
     try {
-      // البحث عن التاجر بواسطة الإيميل في مجموعة merchants
+      // Find merchant by email in merchants collection
       final query =
           await FirebaseFirestore.instance
               .collection('merchants')
@@ -206,14 +207,14 @@ class AdminTicketsScreen extends StatelessWidget {
       if (!context.mounted) return;
       if (query.docs.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("هذا الإيميل غير مسجل كتاجر!")),
+          const SnackBar(content: Text("This email is not registered as a merchant!")),
         );
         return;
       }
 
       final userId = query.docs.first.id;
       if (!context.mounted) return;
-      // استدعاء دالة التفعيل التي كتبناها سابقاً
+      // Call the activation function written earlier
       await _activateMerchantSubscription(context, userId, email);
       _searchController.clear();
     } catch (e) {
@@ -240,12 +241,12 @@ class AdminTicketsScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("تم تفعيل اشتراك $email بنجاح")));
+        ).showSnackBar(SnackBar(content: Text("Subscription for $email activated successfully")));
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("فشل التفعيل، تأكد من البيانات")),
+          const SnackBar(content: Text("Activation failed, check data")),
         );
       }
     }
@@ -271,8 +272,8 @@ class AdminTicketsScreen extends StatelessWidget {
       scheme: 'mailto',
       path: email,
       queryParameters: {
-        'subject': 'الرد على استفسارك في Invento',
-        'body': '\n\n--- رسالتك الأصلية ---\n$originalMessage',
+        'subject': 'Reply to your inquiry at Invento',
+        'body': '\n\n--- Your original message ---\n$originalMessage',
       },
     );
     if (await canLaunchUrl(emailLaunchUri)) {

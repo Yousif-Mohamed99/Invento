@@ -6,6 +6,7 @@ import 'package:invento/features/home/presentation/pages/order_details_screen.da
 import 'package:invento/features/orders/domain/entities/order_entity.dart';
 import 'package:invento/features/orders/domain/repositories/orders_repository.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class OrdersListScreen extends StatefulWidget {
   const OrdersListScreen({super.key});
@@ -27,13 +28,13 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
         elevation: 0,
         title: Column(
           children: [
-            const Text("كل الطلبات"),
+            Text(AppLocalizations.of(context)!.all_orders),
             StreamBuilder<List<OrderEntity>>(
               stream: sl<OrdersRepository>().getAllOrdersStream(),
               builder: (context, snapshot) {
                 final count = snapshot.data?.length ?? 0;
                 return Text(
-                  "$count طلب نشط",
+                  AppLocalizations.of(context)!.active_orders_count(count),
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
@@ -80,8 +81,8 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                       value: selectedCity,
                       dropdownColor: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      hint: const Text(
-                        'المحافظة',
+                      hint: Text(
+                        AppLocalizations.of(context)!.city,
                         style: TextStyle(
                           color: Color(0xFF2563EB),
                           fontSize: 12,
@@ -94,11 +95,11 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                         size: 18,
                       ),
                       items: [
-                        const DropdownMenuItem<String>(
+                        DropdownMenuItem<String>(
                           value: null,
                           child: Text(
-                            "الكل",
-                            style: TextStyle(
+                            AppLocalizations.of(context)!.all,
+                            style: const TextStyle(
                               color: Color(0xFF2563EB),
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
@@ -150,7 +151,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                 onChanged:
                     (value) => setState(() => searchQuery = value.trim()),
                 decoration: InputDecoration(
-                  hintText: "ابحث برقم الطلب (ID)...",
+                  hintText: AppLocalizations.of(context)!.search_by_order_id,
                   hintStyle: const TextStyle(color: Colors.blueGrey),
                   prefixIcon: const Icon(
                     Icons.search,
@@ -176,17 +177,17 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("لا توجد طلبات مسجلة بعد"));
+            return Center(child: Text(AppLocalizations.of(context)!.no_orders_yet));
           }
 
-          // 1. الفلترة الأساسية (استبعاد الملغي)
+          // 1. Basic filtering (exclude cancelled)
           List<OrderEntity> orders =
               snapshot.data!.where((order) {
                 return order.status != OrderStatus.cancelled &&
                     order.status.name != 'cancelled';
               }).toList();
 
-          // 2. الفلترة حسب المحافظة
+          // 2. Filter by province/governorate
           if (selectedCity != null) {
             orders =
                 orders.where((order) => order.city == selectedCity).toList();
@@ -194,7 +195,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
 
           if (searchQuery.isNotEmpty) {
             orders.sort((a, b) {
-              // إذا كان الأوردر "أ" يطابق الـ ID، يطلع فوق
+              // If order "a" matches the ID, move to top
               bool aMatches = a.id!.toLowerCase().contains(
                 searchQuery.toLowerCase(),
               );
@@ -208,7 +209,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
             });
           }
 
-          if (orders.isEmpty) return const Center(child: Text("لا توجد نتائج"));
+          if (orders.isEmpty) return const Center(child: Text("No results found"));
 
           return ListView.builder(
             itemCount: orders.length,
@@ -326,7 +327,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      "${order.totalAmount} ج.م",
+                                      "${order.totalAmount} EGP",
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w700,
                                         color: Color(0xFF2563EB),
@@ -381,7 +382,7 @@ class _RealTimeTextState extends State<RealTimeText> {
   @override
   void initState() {
     super.initState();
-    // تحديث كل دقيقة (60 ثانية)
+    // Update every minute (60 seconds)
     _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       if (mounted) setState(() {});
     });
@@ -389,12 +390,12 @@ class _RealTimeTextState extends State<RealTimeText> {
 
   @override
   void dispose() {
-    _timer?.cancel(); // إيقاف التايمر عند حذف الـ Widget من الشاشة
+    _timer?.cancel(); // Stop timer when widget is disposed
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Text(timeago.format(widget.date, locale: 'ar'), style: widget.style);
+    return Text(timeago.format(widget.date, locale: 'en'), style: widget.style);
   }
 }

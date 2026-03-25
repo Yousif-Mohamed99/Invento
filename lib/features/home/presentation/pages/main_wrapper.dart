@@ -6,8 +6,8 @@ import 'package:invento/features/home/presentation/pages/orders_list_screen.dart
 import 'package:invento/features/home/presentation/pages/profile_screen.dart';
 import 'package:invento/features/home/presentation/pages/subscription_paywall.dart';
 import 'package:invento/features/products/presentation/pages/add_product_screen.dart';
-import 'package:invento/features/products/presentation/pages/products_screen.dart';
 import 'dashboard_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -28,7 +28,6 @@ class _MainWrapperState extends State<MainWrapper> {
 
   final List<Widget> _pages = [
     const DashboardScreen(),
-    const ProductsScreen(),
     const OrdersListScreen(),
     const ProfileScreen(),
   ];
@@ -37,9 +36,9 @@ class _MainWrapperState extends State<MainWrapper> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null && user.email == dotenv.env['ADMIN_EMAIL']) {
       setState(() {
-        _isTrialExpired = false; // الأدمن دائماً حسابه مفتوح
+        _isTrialExpired = false; // Admin account is always open
       });
-      return; // اخرج من الدالة ولا تكمل الفحص
+      return; // Exit function and stop check
     }
     if (user != null) {
       final userDoc =
@@ -61,7 +60,7 @@ class _MainWrapperState extends State<MainWrapper> {
             isExpired = true;
           }
         }
-        // تم إلغاء فحص الفترة التجريبية بالوقت كما طلب العميل
+        // Trial period time check was cancelled as requested by the client
 
         setState(() {
           _isTrialExpired = isExpired;
@@ -74,7 +73,7 @@ class _MainWrapperState extends State<MainWrapper> {
   Widget build(BuildContext context) {
     if (_isTrialExpired) {
       return SubscriptionPaywall(
-        email: FirebaseAuth.instance.currentUser?.email ?? "مستخدم غير معروف",
+        email: FirebaseAuth.instance.currentUser?.email ?? "Unknown User",
         isTrialExpired: true,
       );
     }
@@ -106,34 +105,27 @@ class _MainWrapperState extends State<MainWrapper> {
               selectedFontSize: 13,
               unselectedFontSize: 12,
               selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-              items: const [
+              items: [
                 BottomNavigationBarItem(
-                  icon: Padding(
+                  icon: const Padding(
                     padding: EdgeInsets.only(bottom: 4.0),
                     child: Icon(Icons.dashboard_rounded, size: 26),
                   ),
-                  label: "الرئيسية",
+                  label: AppLocalizations.of(context)!.home,
                 ),
                 BottomNavigationBarItem(
-                  icon: Padding(
-                    padding: EdgeInsets.only(bottom: 4.0),
-                    child: Icon(Icons.inventory_2_rounded, size: 26),
-                  ),
-                  label: "المنتجات",
-                ),
-                BottomNavigationBarItem(
-                  icon: Padding(
+                  icon: const Padding(
                     padding: EdgeInsets.only(bottom: 4.0),
                     child: Icon(Icons.shopping_bag_rounded, size: 26),
                   ),
-                  label: "الطلبات",
+                  label: AppLocalizations.of(context)!.orders,
                 ),
                 BottomNavigationBarItem(
-                  icon: Padding(
+                  icon: const Padding(
                     padding: EdgeInsets.only(bottom: 4.0),
                     child: Icon(Icons.person_rounded, size: 26),
                   ),
-                  label: "حسابي",
+                  label: AppLocalizations.of(context)!.account,
                 ),
               ],
             ),
@@ -143,7 +135,7 @@ class _MainWrapperState extends State<MainWrapper> {
       floatingActionButton:
           _currentIndex == 0
               ? FloatingActionButton(
-                // يظهر فقط في الرئيسية
+                // Shows only in home page
                 onPressed: () => _navigateToAddProduct(context),
                 backgroundColor: const Color(0xFF2563EB),
                 elevation: 4,

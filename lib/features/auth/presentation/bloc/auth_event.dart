@@ -1,26 +1,24 @@
 abstract class AuthEvent {}
 
-// حدث تسجيل الدخول
+// Login event
 class LoginRequested extends AuthEvent {
   final String email;
   final String password;
   LoginRequested(this.email, this.password);
 }
 
-// حدث تسجيل تاجر جديد
+// Register new merchant event
 class SignUpRequested extends AuthEvent {
   final String email;
   final String password;
   final String storeName;
   final String city;
-  final String address;
 
   SignUpRequested({
     required this.email,
     required this.password,
     required this.storeName,
     required this.city,
-    required this.address,
   });
 }
 

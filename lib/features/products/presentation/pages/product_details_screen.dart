@@ -5,6 +5,7 @@ import 'package:invento/features/products/presentation/bloc/products_state.dart'
 import '../../data/models/product_model.dart';
 import '../bloc/products_bloc.dart';
 import '../bloc/products_event.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
@@ -18,6 +19,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   late TextEditingController _nameController;
   late TextEditingController _priceController;
   late TextEditingController _stockController;
+  late List<ProductSize> _currentSizes;
 
   @override
   void initState() {
@@ -27,13 +29,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       text: widget.product.sellingPrice.toString(),
     );
 
+    // Initialize sizes from product
+    _currentSizes =
+        widget.product.sizes != null
+            ? List<ProductSize>.from(widget.product.sizes!)
+            : [];
+
     // Calculate total stock from sizes if they exist
     int combinedStock = widget.product.stockQuantity;
-    if (widget.product.sizes != null && widget.product.sizes!.isNotEmpty) {
-      combinedStock = widget.product.sizes!.fold(
-        0,
-        (sum, item) => sum + item.quantity,
-      );
+    if (_currentSizes.isNotEmpty) {
+      combinedStock = _currentSizes.fold(0, (sum, item) => sum + item.quantity);
     }
 
     _stockController = TextEditingController(text: combinedStock.toString());
@@ -60,11 +65,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           _nameController.text = currentProduct.name;
           _priceController.text = currentProduct.sellingPrice.toString();
 
-          // Refresh total stock from sizes if updated
-          int combinedStock = currentProduct.stockQuantity;
+          // Update current sizes from product
           if (currentProduct.sizes != null &&
               currentProduct.sizes!.isNotEmpty) {
-            combinedStock = currentProduct.sizes!.fold(
+            _currentSizes = List<ProductSize>.from(currentProduct.sizes!);
+          }
+
+          // Refresh total stock from current sizes
+          int combinedStock = currentProduct.stockQuantity;
+          if (_currentSizes.isNotEmpty) {
+            combinedStock = _currentSizes.fold(
               0,
               (sum, item) => sum + item.quantity,
             );
@@ -81,8 +91,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           );
         }
 
-        final hasSizes =
-            currentProduct.sizes != null && currentProduct.sizes!.isNotEmpty;
+        final hasSizes = _currentSizes.isNotEmpty;
 
         return Scaffold(
           backgroundColor: const Color(0xFFF8FAFC),
@@ -100,7 +109,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       _buildInfoCard(hasSizes),
                       const SizedBox(height: 25),
                       if (hasSizes) ...[
-                        _buildSizesCard(currentProduct),
+                        _buildSizesCard(),
                         const SizedBox(height: 20),
                       ],
                       _buildActionButtons(context, currentProduct),
@@ -123,9 +132,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       backgroundColor: const Color(0xFF1E3A8A),
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
-        title: const Text(
-          "تفاصيل المنتج",
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.product_details,
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -182,6 +191,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ? Image.network(
                   product.imageUrl!,
                   fit: BoxFit.cover,
+                  cacheHeight: 500,
+                  cacheWidth: 500,
                   errorBuilder:
                       (context, error, stackTrace) => _buildPlaceholderImage(),
                 )
@@ -216,11 +227,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildCardTitle(Icons.info_outline, "البيانات الأساسية"),
+          _buildCardTitle(Icons.info_outline, AppLocalizations.of(context)!.basic_info),
           const SizedBox(height: 20),
           _buildTextField(
             controller: _nameController,
-            label: "اسم المنتج",
+            label: AppLocalizations.of(context)!.product_name,
             icon: Icons.edit_note_rounded,
           ),
           const SizedBox(height: 15),
@@ -229,21 +240,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               Expanded(
                 child: _buildTextField(
                   controller: _priceController,
-                  label: "سعر البيع",
+                  label: AppLocalizations.of(context)!.selling_price,
                   icon: Icons.payments_outlined,
                   keyboardType: TextInputType.number,
-                  suffix: "ج.م",
+                  suffix: AppLocalizations.of(context)!.egp,
                 ),
               ),
               const SizedBox(width: 15),
               Expanded(
                 child: _buildTextField(
                   controller: _stockController,
-                  label: "إجمالي الكمية",
+                  label: AppLocalizations.of(context)!.total_quantity,
                   icon: Icons.inventory_2_outlined,
                   keyboardType: TextInputType.number,
                   readOnly: hasSizes,
-                  helperText: hasSizes ? "تُحسب من المقاسات" : null,
+                  helperText: hasSizes ? AppLocalizations.of(context)!.calculated_from_sizes : null,
                   fillColor: hasSizes ? const Color(0xFFF1F5F9) : null,
                 ),
               ),
@@ -311,7 +322,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  Widget _buildSizesCard(ProductEntity currentProduct) {
+  Widget _buildSizesCard() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -328,15 +339,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildCardTitle(Icons.straighten_rounded, "توزيع المخزن"),
+          _buildCardTitle(Icons.straighten_rounded, AppLocalizations.of(context)!.stock_distribution),
           const SizedBox(height: 15),
-          _buildEnhancedSizesTable(currentProduct),
+          _buildEnhancedSizesTable(),
         ],
       ),
     );
   }
 
-  Widget _buildEnhancedSizesTable(ProductEntity currentProduct) {
+  Widget _buildEnhancedSizesTable() {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
@@ -353,19 +364,19 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ),
             ),
             child: Row(
-              children: const [
+              children: [
                 Expanded(
                   child: Text(
-                    "المقاس",
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.size,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF475569),
                     ),
                   ),
                 ),
                 Text(
-                  "الكمية",
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.quantity,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF475569),
                   ),
@@ -373,7 +384,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ],
             ),
           ),
-          ...currentProduct.sizes!.map(
+          ..._currentSizes.map(
             (s) => Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
@@ -442,9 +453,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             Icons.settings_suggest_outlined,
             color: Colors.white,
           ),
-          label: const Text(
-            "تعديل تفاصيل المقاسات",
-            style: TextStyle(color: Colors.white),
+          label: Text(
+            AppLocalizations.of(context)!.edit_size_details,
+            style: const TextStyle(color: Colors.white),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF334155),
@@ -468,16 +479,36 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           ),
           onPressed: () {
             final double? price = double.tryParse(_priceController.text);
-            final int? stock = int.tryParse(_stockController.text);
 
-            if (price == null || stock == null) {
+            if (price == null) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("برجاء إدخال بيانات صحيحة"),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.please_enter_valid_data),
                   backgroundColor: Colors.orangeAccent,
                 ),
               );
               return;
+            }
+
+            // Calculate total stock from current sizes or use manual entry
+            int totalStock = widget.product.stockQuantity;
+            if (_currentSizes.isNotEmpty) {
+              totalStock = _currentSizes.fold(
+                0,
+                (sum, item) => sum + item.quantity,
+              );
+            } else {
+              final int? stock = int.tryParse(_stockController.text);
+              if (stock == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.please_enter_valid_data),
+                    backgroundColor: Colors.orangeAccent,
+                  ),
+                );
+                return;
+              }
+              totalStock = stock;
             }
 
             final updatedProduct = ProductModel(
@@ -485,20 +516,30 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               name: _nameController.text,
               sellingPrice: price,
               costPrice: widget.product.costPrice,
-              stockQuantity: stock,
+              stockQuantity: totalStock,
               category: widget.product.category,
               imageUrl: widget.product.imageUrl,
-              sizes: currentProduct.sizes,
+              sizes: _currentSizes.isNotEmpty ? _currentSizes : null,
             );
 
             context.read<ProductsBloc>().add(
               UpdateProductEvent(updatedProduct),
             );
+
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.changes_saved_successfully),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 1),
+              ),
+            );
+
             Navigator.pop(context);
           },
-          child: const Text(
-            "حفظ التغييرات",
-            style: TextStyle(
+          child: Text(
+            AppLocalizations.of(context)!.save_changes,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -522,22 +563,22 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             title: Row(
-              children: const [
-                Icon(Icons.warning_amber_rounded, color: Colors.red),
-                SizedBox(width: 10),
-                Text("حذف المنتج؟"),
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: Colors.red),
+                const SizedBox(width: 10),
+                Text(AppLocalizations.of(context)!.delete_product_confirm_title),
               ],
             ),
-            content: const Text(
-              "هل أنت متأكد من حذف هذا المنتج؟ لا يمكن التراجع عن هذا الإجراء.",
-              style: TextStyle(color: Colors.blueGrey),
+            content: Text(
+              AppLocalizations.of(context)!.delete_product_confirm_body,
+              style: const TextStyle(color: Colors.blueGrey),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  "إلغاء",
-                  style: TextStyle(color: Colors.grey),
+                child: Text(
+                  AppLocalizations.of(context)!.cancel,
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ),
               ElevatedButton(
@@ -553,9 +594,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   Navigator.pop(context);
                   Navigator.pop(parentContext);
                 },
-                child: const Text(
-                  "حذف نهائي",
-                  style: TextStyle(color: Colors.white),
+                child: Text(
+                  AppLocalizations.of(context)!.delete_permanently,
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ],
@@ -564,7 +605,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   void _showEditSizesDialog() {
-    List<ProductSize> tempSizes = List.from(widget.product.sizes ?? []);
+    List<ProductSize> tempSizes = List.from(_currentSizes);
 
     showDialog(
       context: context,
@@ -577,12 +618,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 title: Row(
-                  children: const [
-                    Icon(Icons.straighten, color: Color(0xFF1E3A8A)),
-                    SizedBox(width: 10),
+                  children: [
+                    const Icon(Icons.straighten, color: Color(0xFF1E3A8A)),
+                    const SizedBox(width: 10),
                     Text(
-                      "تعديل المقاسات",
-                      style: TextStyle(color: Color(0xFF1E3A8A)),
+                      AppLocalizations.of(context)!.edit_sizes,
+                      style: const TextStyle(color: Color(0xFF1E3A8A)),
                     ),
                   ],
                 ),
@@ -608,7 +649,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                     child: TextFormField(
                                       initialValue: tempSizes[index].size,
                                       decoration: InputDecoration(
-                                        hintText: "المقاس",
+                                        hintText: AppLocalizations.of(context)!.size,
                                         contentPadding:
                                             const EdgeInsets.symmetric(
                                               horizontal: 12,
@@ -636,7 +677,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           tempSizes[index].quantity.toString(),
                                       keyboardType: TextInputType.number,
                                       decoration: InputDecoration(
-                                        hintText: "الكمية",
+                                        hintText: AppLocalizations.of(context)!.quantity,
                                         contentPadding:
                                             const EdgeInsets.symmetric(
                                               horizontal: 12,
@@ -683,7 +724,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           });
                         },
                         icon: const Icon(Icons.add_circle_outline, size: 20),
-                        label: const Text("إضافة مقاس جديد"),
+                        label: Text(AppLocalizations.of(context)!.add_new_size),
                         style: TextButton.styleFrom(
                           foregroundColor: const Color(0xFF3B82F6),
                         ),
@@ -694,9 +735,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      "إلغاء",
-                      style: TextStyle(color: Colors.grey),
+                    child: Text(
+                      AppLocalizations.of(context)!.cancel,
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   ),
                   ElevatedButton(
@@ -707,22 +748,49 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       ),
                     ),
                     onPressed: () {
-                      int newTotalStock = tempSizes.fold(
+                      // Filter out empty sizes and update the state
+                      final validSizes =
+                          tempSizes
+                              .where((s) => s.size.isNotEmpty && s.quantity > 0)
+                              .toList();
+
+                      if (validSizes.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              AppLocalizations.of(context)!.please_add_at_least_one_size,
+                            ),
+                            backgroundColor: Colors.orangeAccent,
+                          ),
+                        );
+                        return;
+                      }
+
+                      int newTotalStock = validSizes.fold(
                         0,
                         (sum, item) => sum + item.quantity,
                       );
 
+                      // Update parent state with new sizes
                       setState(() {
-                        widget.product.sizes?.clear();
-                        widget.product.sizes?.addAll(tempSizes);
+                        _currentSizes = validSizes;
                         _stockController.text = newTotalStock.toString();
                       });
 
                       Navigator.pop(context);
+
+                      // Show confirmation
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(AppLocalizations.of(context)!.sizes_updated_successfully),
+                          backgroundColor: Colors.green,
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
                     },
-                    child: const Text(
-                      "حفظ",
-                      style: TextStyle(color: Colors.white),
+                    child: Text(
+                      AppLocalizations.of(context)!.save_changes,
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 ],

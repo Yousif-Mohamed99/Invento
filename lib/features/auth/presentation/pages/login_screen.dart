@@ -6,6 +6,7 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -35,8 +36,8 @@ class _LoginScreenState extends State<LoginScreen> {
           listener: (context, state) {
             if (state is AuthSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("أهلاً بك مجدداً!"),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.welcome_back),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -45,13 +46,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 MaterialPageRoute(builder: (context) => const MainWrapper()),
                 (route) => false,
               );
+            } else if (state is AuthPasswordResetSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.password_reset_sent),
+                  backgroundColor: Colors.green,
+                ),
+              );
             } else if (state is AuthFailure) {
-              final isResetSuccess = state.message.contains("بريدك");
-
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
-                  backgroundColor: isResetSuccess ? Colors.green : Colors.red,
+                  backgroundColor: Colors.red,
                 ),
               );
             }
@@ -88,10 +94,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      "أدر تجارتك بذكاء من مكان واحد",
+                    Text(
+                      AppLocalizations.of(context)!.app_tagline,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         color: Colors.blueGrey,
                         fontWeight: FontWeight.w500,
@@ -102,13 +108,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Email Field
                     _buildTextFormField(
                       controller: _emailController,
-                      label: "البريد الإلكتروني",
+                      label: AppLocalizations.of(context)!.email,
                       icon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       validator:
                           (value) =>
                               value!.isEmpty
-                                  ? "من فضلك ادخل البريد الإلكتروني"
+                                  ? AppLocalizations.of(context)!.email_required
                                   : null,
                     ),
                     const SizedBox(height: 20),
@@ -116,13 +122,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Password Field
                     _buildTextFormField(
                       controller: _passwordController,
-                      label: "كلمة المرور",
+                      label: AppLocalizations.of(context)!.password,
                       icon: Icons.lock_outline,
                       obscureText: true,
                       validator:
                           (value) =>
                               value!.length < 6
-                                  ? "كلمة المرور قصيرة جداً"
+                                  ? AppLocalizations.of(context)!.password_too_short
                                   : null,
                     ),
 
@@ -132,10 +138,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () {
                           if (_emailController.text.trim().isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  "اكتب بريدك الإلكتروني أولاً لإرسال رابط الاستعادة",
-                                ),
+                              SnackBar(
+                                  content: Text(
+                                    AppLocalizations.of(context)!.enter_email_to_reset,
+                                  ),
                                 backgroundColor: Colors.orange,
                               ),
                             );
@@ -147,8 +153,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           }
                         },
-                        child: const Text(
-                          "نسيت كلمة المرور؟",
+                        child: Text(
+                          AppLocalizations.of(context)!.forgot_password,
                           style: TextStyle(
                             color: Color(0xFFE53935),
                             fontWeight: FontWeight.w600,
@@ -171,9 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(
-                                  0xFF1E3A8A,
-                                ).withValues(alpha: 0.25),
+                                color: const Color(0xFF1E3A8A).withValues(alpha: 0.25),
                                 blurRadius: 15,
                                 offset: const Offset(0, 8),
                               ),
@@ -204,8 +208,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 );
                               }
                             },
-                            child: const Text(
-                              "تسجيل الدخول",
+                            child: Text(
+                              AppLocalizations.of(context)!.login,
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -224,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     //     const Padding(
                     //       padding: EdgeInsets.symmetric(horizontal: 16),
                     //       child: Text(
-                    //         "أو سجل بواسطة",
+                    //         "Or sign in with",
                     //         style: TextStyle(
                     //           color: Colors.blueGrey,
                     //           fontSize: 13,
@@ -257,8 +261,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: Color(0xFFEA4335),
                         size: 18,
                       ),
-                      label: const Text(
-                        "الدخول بواسطة جوجل",
+                      label: Text(
+                        AppLocalizations.of(context)!.login_with_google,
                         style: TextStyle(
                           color: Color(0xFF1E3A8A),
                           fontWeight: FontWeight.bold,
@@ -272,8 +276,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          "ليس لديك حساب؟",
+                        Text(
+                          AppLocalizations.of(context)!.dont_have_account,
                           style: TextStyle(
                             color: Colors.blueGrey,
                             fontSize: 15,
@@ -288,8 +292,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             );
                           },
-                          child: const Text(
-                            "سجل كتاجر جديد",
+                          child: Text(
+                            AppLocalizations.of(context)!.register_as_merchant,
                             style: TextStyle(
                               color: Color(0xFF2563EB),
                               fontWeight: FontWeight.bold,

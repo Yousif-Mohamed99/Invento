@@ -24,6 +24,7 @@ import 'package:invento/features/products/presentation/pages/products_screen.dar
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:invento/core/models/subscription_plan.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -33,7 +34,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 String _formatTime(DateTime dateTime) {
-  return timeago.format(dateTime, locale: 'ar');
+  return timeago.format(dateTime, locale: 'en');
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
@@ -58,6 +59,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _dismissedActivityIds.add(id);
     await prefs.setStringList('dismissedActivities', _dismissedActivityIds);
     setState(() {});
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.delete_sweep_rounded, color: Colors.white),
+              const SizedBox(width: 12),
+              Text(
+                AppLocalizations.of(context)!.activity_dismissed,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF1E3A8A),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(15),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
@@ -67,9 +92,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text(
-          "لوحة التحكم",
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.dashboard,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         elevation: 0,
@@ -91,7 +116,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   );
                 }
               } catch (e) {
-                debugPrint("خطأ أثناء تسجيل الخروج: $e");
+                debugPrint("Error during logout: $e");
               }
             },
           ),
@@ -118,7 +143,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     },
                   ),
                   const SizedBox(height: 25),
-                  _buildSectionTitle("ملخص الأداء"),
+                  _buildSectionTitle(AppLocalizations.of(context)!.performance_summary),
                   const SizedBox(height: 15),
                   BlocBuilder<OrdersBloc, OrdersState>(
                     builder: (context, state) {
@@ -136,7 +161,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           Expanded(
                             child: _buildStatCard(
-                              title: "طلبات اليوم",
+                              title: AppLocalizations.of(context)!.today_orders,
                               value: todayCount,
                               icon: Icons.shopping_cart_checkout_rounded,
                               color: const Color(0xFFF59E0B),
@@ -145,8 +170,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(width: 15),
                           Expanded(
                             child: _buildStatCard(
-                              title: "أرباح اليوم",
-                              value: "$todayEarnings ج.م",
+                              title: AppLocalizations.of(context)!.today_earnings,
+                              value: "$todayEarnings ${AppLocalizations.of(context)!.egp}",
                               icon: Icons.account_balance_wallet_rounded,
                               color: const Color(0xFF10B981),
                             ),
@@ -156,7 +181,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     },
                   ),
                   const SizedBox(height: 25),
-                  _buildSectionTitle("آخر الأنشطة"),
+                  _buildSectionTitle(AppLocalizations.of(context)!.recent_activities),
                   const SizedBox(height: 15),
                   StreamBuilder<List<ActivityModel>>(
                     stream: GetIt.I<OrdersRepository>().getActivitiesStream(),
@@ -210,19 +235,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           confirmDismiss: (direction) async {
                                             return await showDialog(
                                               context: context,
-                                              builder:
-                                                  (context) => AlertDialog(
+                                               builder: (context) => AlertDialog(
+                                                    backgroundColor: Colors.white,
                                                     shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            16,
+                                                      borderRadius: BorderRadius.circular(20),
+                                                    ),
+                                                    title: Row(
+                                                      children: [
+                                                        Container(
+                                                          padding: const EdgeInsets.all(8),
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.red.shade50,
+                                                            borderRadius: BorderRadius.circular(10),
                                                           ),
+                                                          child: const Icon(
+                                                            Icons.delete_sweep_rounded,
+                                                            color: Colors.red,
+                                                            size: 20,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 12),
+                                                        Text(
+                                                          AppLocalizations.of(context)!.confirm_deletion,
+                                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    title: const Text(
-                                                      "تأكيد الحذف",
-                                                    ),
-                                                    content: const Text(
-                                                      "هل أنت متأكد من مسح هذا النشاط من اللوحة؟",
+                                                    content: Text(
+                                                      AppLocalizations.of(context)!.dismiss_activity_confirm,
+                                                      style: const TextStyle(fontSize: 15, color: Colors.black54),
                                                     ),
                                                     actions: [
                                                       TextButton(
@@ -230,8 +271,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                             () => Navigator.of(
                                                               context,
                                                             ).pop(false),
-                                                        child: const Text(
-                                                          "إلغاء",
+                                                        child: Text(
+                                                          AppLocalizations.of(context)!.cancel,
                                                         ),
                                                       ),
                                                       ElevatedButton(
@@ -241,7 +282,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                           shape: RoundedRectangleBorder(
                                                             borderRadius:
                                                                 BorderRadius.circular(
-                                                                  8,
+                                                                  10,
                                                                 ),
                                                           ),
                                                         ),
@@ -249,9 +290,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                             () => Navigator.of(
                                                               context,
                                                             ).pop(true),
-                                                        child: const Text(
-                                                          "نعم، امسح",
-                                                          style: TextStyle(
+                                                        child: Text(
+                                                          AppLocalizations.of(context)!.dismiss,
+                                                          style: const TextStyle(
                                                             color: Colors.white,
                                                           ),
                                                         ),
@@ -262,15 +303,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           },
                                           onDismissed: (direction) {
                                             _dismissActivity(activity.id);
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
+                                            ScaffoldMessenger.of(context).showSnackBar(
                                               SnackBar(
-                                                content: const Text(
-                                                  "تم مسح النشاط من اللوحة",
+                                                content: Row(
+                                                  children: [
+                                                    const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                                                    const SizedBox(width: 12),
+                                                    Text(
+                                                      AppLocalizations.of(context)!.activity_dismissed,
+                                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                                    ),
+                                                  ],
                                                 ),
+                                                backgroundColor: const Color(0xFF1E3A8A),
+                                                behavior: SnackBarBehavior.floating,
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                margin: const EdgeInsets.all(15),
+                                                duration: const Duration(seconds: 3),
                                                 action: SnackBarAction(
-                                                  label: "تراجع",
+                                                  label: AppLocalizations.of(context)!.undo,
                                                   onPressed: () async {
                                                     final prefs =
                                                         await SharedPreferences.getInstance();
@@ -385,9 +436,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "مرحباً بك،",
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  Text(
+                    AppLocalizations.of(context)!.welcome,
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                   StreamBuilder<DocumentSnapshot>(
                     stream:
@@ -396,9 +447,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             .doc(user?.uid)
                             .snapshots(),
                     builder: (context, snapshot) {
-                      String storeName = user?.displayName ?? "تاجري العزيز";
+                      String storeName = user?.displayName ?? AppLocalizations.of(context)!.dear_merchant;
                       if (snapshot.hasData && snapshot.data!.exists) {
-                        storeName = snapshot.data!['storeName'] ?? storeName;
+                        storeName = snapshot.data!['storeName'] ?? AppLocalizations.of(context)!.dear_merchant;
                       }
                       return Text(
                         storeName,
@@ -448,7 +499,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     if (state is ProductsLoaded) {
                       count = state.products.length.toString();
                     }
-                    return _buildHeaderStat("المنتجات", count);
+                    return _buildHeaderStat(AppLocalizations.of(context)!.products, count);
                   },
                 ),
                 BlocBuilder<OrdersBloc, OrdersState>(
@@ -457,7 +508,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     if (state is OrdersLoaded) {
                       count = state.orders.length.toString();
                     }
-                    return _buildHeaderStat("إجمالي الطلبات", count);
+                    return _buildHeaderStat(AppLocalizations.of(context)!.total_orders, count);
                   },
                 ),
               ],
@@ -491,7 +542,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("إجراءات سريعة"),
+        _buildSectionTitle(AppLocalizations.of(context)!.quick_actions),
         const SizedBox(height: 15),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -499,7 +550,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _buildActionItem(
               context,
               icon: Icons.add_business_rounded,
-              label: "أوردر جديد",
+              label: AppLocalizations.of(context)!.new_order,
               color: Colors.orange,
               onTap:
                   () => Navigator.push(
@@ -510,7 +561,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _buildActionItem(
               context,
               icon: Icons.inventory_rounded,
-              label: "المخزن",
+              label: AppLocalizations.of(context)!.inventory,
               color: Colors.blueAccent,
               onTap:
                   () => Navigator.push(
@@ -521,7 +572,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _buildActionItem(
               context,
               icon: Icons.analytics_rounded,
-              label: "التقارير",
+              label: AppLocalizations.of(context)!.reports,
               color: Colors.purple,
               onTap:
                   () => Navigator.push(
@@ -534,7 +585,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _buildActionItem(
               context,
               icon: Icons.support_agent_rounded,
-              label: "الدعم",
+              label: AppLocalizations.of(context)!.support,
               color: Colors.green,
               onTap:
                   () => Navigator.push(
@@ -772,17 +823,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildEmptyActivitiesState() {
-    return const Padding(
-      key: ValueKey('empty'),
-      padding: EdgeInsets.symmetric(vertical: 40),
+    return Padding(
+      key: const ValueKey('empty'),
+      padding: const EdgeInsets.symmetric(vertical: 40),
       child: Center(
         child: Column(
           children: [
-            Icon(Icons.done_all_rounded, color: Colors.green, size: 50),
-            SizedBox(height: 16),
+            const Icon(Icons.done_all_rounded, color: Colors.green, size: 50),
+            const SizedBox(height: 16),
             Text(
-              "كل الأنشطة مكتملة حالياً",
-              style: TextStyle(
+              AppLocalizations.of(context)!.all_caught_up,
+              style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -855,7 +906,7 @@ class UsageLimitCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
                             children: [
                               Icon(
                                 Icons.assessment_rounded,
@@ -864,8 +915,8 @@ class UsageLimitCard extends StatelessWidget {
                               ),
                               SizedBox(width: 10),
                               Text(
-                                "حالة الاستهلاك",
-                                style: TextStyle(
+                                AppLocalizations.of(context)!.usage_status,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF1E3A8A),
@@ -875,14 +926,16 @@ class UsageLimitCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 20),
                           _buildUsageItem(
-                            label: "المنتجات",
+                            context,
+                            label: AppLocalizations.of(context)!.products,
                             current: productCount,
                             limit: plan.productLimit,
                             color: const Color(0xFF2563EB),
                           ),
                           const SizedBox(height: 15),
                           _buildUsageItem(
-                            label: "الطلبات (شهرياً)",
+                            context,
+                            label: AppLocalizations.of(context)!.monthly_orders,
                             current: monthlyOrdersCount,
                             limit: plan.orderLimit,
                             color: const Color(0xFF10B981),
@@ -900,7 +953,8 @@ class UsageLimitCard extends StatelessWidget {
     );
   }
 
-  Widget _buildUsageItem({
+  Widget _buildUsageItem(
+    BuildContext context, {
     required String label,
     required int current,
     required int limit,
@@ -951,16 +1005,16 @@ class UsageLimitCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              "لقد اقتربت من الحد الأقصى!",
+              AppLocalizations.of(context)!.nearing_limit_warning,
               style: TextStyle(color: Colors.orange[700], fontSize: 10),
             ),
           ),
         if (isExceeded && limit != -1)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: const Text(
-              "تم الوصول للحد الأقصى، يرجى الترقية",
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.limit_reached_upgrade,
+              style: const TextStyle(
                 color: Colors.red,
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
@@ -1007,7 +1061,7 @@ Future<void> _navigateToProductDetails(
     if (context.mounted) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("خطأ: ${e.toString()}")));
+      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
     }
   }
 }

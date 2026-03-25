@@ -13,10 +13,10 @@ class SyncStockUseCase {
       final product = await productsRepository.getProductById(item.productId);
 
       if (product != null) {
-        // 1. حساب الكمية الإجمالية الجديدة
+        // 1. Calculate new total quantity
         final newTotalQuantity = product.stockQuantity - item.quantity;
 
-        // 2. تحديث قائمة المقاسات (خصم الكمية من المقاس المختار)
+        // 2. Update sizes list (subtract quantity from selected size)
         List<ProductSize>? updatedSizes;
         if (product.sizes != null && item.selectedSize != null) {
           updatedSizes =
@@ -31,7 +31,7 @@ class SyncStockUseCase {
               }).toList();
         }
 
-        // 3. تحديث المنتج بالبيانات الجديدة (الإجمالي + توزيع المقاسات)
+        // 3. Update product with new data (Total + sizes distribution)
         final updatedProduct = ProductModel(
           id: product.id,
           name: product.name,

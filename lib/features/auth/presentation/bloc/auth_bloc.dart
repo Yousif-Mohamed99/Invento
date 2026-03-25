@@ -37,7 +37,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           password: event.password,
           storeName: event.storeName,
           city: event.city,
-          address: event.address,
         );
         emit(AuthSuccess(credential.user!.uid));
       } catch (e) {
@@ -61,7 +60,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await resetPasswordUseCase(event.email);
         emit(
           AuthPasswordResetSuccess(
-            "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
+            "",
           ),
         );
       } catch (e) {

@@ -8,7 +8,6 @@ abstract class AuthRepository {
     required String password,
     required String storeName,
     required String city,
-    required String address,
   });
 
   Future<void> signOut();

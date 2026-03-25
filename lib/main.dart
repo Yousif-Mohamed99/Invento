@@ -15,19 +15,19 @@ import 'package:invento/features/products/presentation/bloc/products_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:invento/features/products/presentation/bloc/products_event.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   timeago.setLocaleMessages('ar', timeago.ArMessages());
+  timeago.setLocaleMessages('en', timeago.EnMessages());
   await Firebase.initializeApp();
 
   await di.init();
 
   await dotenv.load(fileName: ".env");
   await FirebaseAppCheck.instance.activate(
-    // للأندرويد: استخدم PlayIntegrity للأمان
     providerAndroid: AndroidPlayIntegrityProvider(),
-    // للآيفون (iOS)
     providerApple: AppleDeviceCheckProvider(),
   );
 
@@ -42,7 +42,6 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(create: (context) => sl<AuthBloc>()),
-
         BlocProvider<ProductsBloc>(
           create: (context) => sl<ProductsBloc>()..add(LoadProductsEvent()),
         ),
@@ -56,21 +55,20 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primaryColor: Colors.blueAccent,
           useMaterial3: true,
-          fontFamily: 'Cairo',
           progressIndicatorTheme: const ProgressIndicatorThemeData(
             color: Colors.blueAccent,
           ),
         ),
         localizationsDelegates: const [
+          AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: const [
-          Locale('ar', 'AE'), // Arabic
+          Locale('en', ''),
         ],
-        locale: const Locale('ar', 'AE'),
-
+        locale: const Locale('en', ''),
         home: StreamBuilder<User?>(
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {

@@ -58,7 +58,7 @@ Future<void> init() async {
     ),
   );
 
-  // Use Cases لمنتجات
+  // Products Use Cases
   sl.registerLazySingleton(() => GetProductsUseCase(sl()));
   sl.registerLazySingleton(() => AddProductUseCase(sl()));
   sl.registerLazySingleton(() => UpdateProductUseCase(repository: sl()));

@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:invento/core/models/subscription_plan.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SubscriptionPaywall extends StatefulWidget {
   final String email;
@@ -22,22 +23,22 @@ class SubscriptionPaywall extends StatefulWidget {
 class _SubscriptionPaywallState extends State<SubscriptionPaywall> {
   PlanType selectedPlan = PlanType.growth;
 
+  /// Open WhatsApp support for subscription
   Future<void> _launchWhatsApp(SubscriptionPlan plan) async {
     var phoneNumber = dotenv.env['SUPPORT_PHONE'];
-    String message =
-        "أريد تفعيل اشتراك باقة (${plan.name}) لتطبيق Invento لحسابي: ${widget.email}";
+    String message = AppLocalizations.of(context)!.plan_activation_whatsapp_msg(plan.name, widget.email);
 
     try {
       final user = FirebaseAuth.instance.currentUser;
       await FirebaseFirestore.instance.collection('support_tickets').add({
         'userId': user?.uid,
         'userEmail': widget.email,
-        'message': "طلب تفعيل باقة: ${plan.name} (عبر واتساب)",
+        'message': "Plan activation request: ${plan.name} (via WhatsApp)",
         'createdAt': Timestamp.now(),
         'status': 'open',
       });
     } catch (e) {
-      debugPrint("خطأ في تسجيل الطلب: $e");
+      debugPrint("Error recording request: $e");
     }
 
     String url =
@@ -70,22 +71,23 @@ class _SubscriptionPaywallState extends State<SubscriptionPaywall> {
           children: [
             const Icon(Icons.stars_rounded, size: 60, color: Colors.orange),
             const SizedBox(height: 16),
-            const Text(
-              "اختر خطة نجاحك",
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            Text(
+              AppLocalizations.of(context)!.choose_success_plan,
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              "اختر الباقة المناسبة لحجم تجارتك وابدأ النمو اليوم",
+            Text(
+              AppLocalizations.of(context)!.choose_plan_desc,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 32),
             ...SubscriptionPlan.plans.map((plan) => _buildPlanCard(plan)),
             const SizedBox(height: 24),
+            // WhatsApp Support Button
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E3A8A),
+                backgroundColor: const Color(0xFF25D366),
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 60),
                 shape: RoundedRectangleBorder(
@@ -99,14 +101,14 @@ class _SubscriptionPaywallState extends State<SubscriptionPaywall> {
                       (p) => p.type == selectedPlan,
                     ),
                   ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(FontAwesomeIcons.whatsapp, size: 20),
-                  SizedBox(width: 12),
+                  const Icon(FontAwesomeIcons.whatsapp, size: 20),
+                  const SizedBox(width: 12),
                   Text(
-                    "تفعيل باقتي الآن",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    AppLocalizations.of(context)!.choose_plan_whatsapp,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -115,7 +117,7 @@ class _SubscriptionPaywallState extends State<SubscriptionPaywall> {
             TextButton(
               onPressed: () => FirebaseAuth.instance.signOut(),
               child: Text(
-                "تسجيل الخروج",
+                AppLocalizations.of(context)!.sign_out,
                 style: TextStyle(color: Colors.red[400], fontSize: 16),
               ),
             ),
@@ -193,19 +195,21 @@ class _SubscriptionPaywallState extends State<SubscriptionPaywall> {
                 child: Divider(),
               ),
               _buildFeature(
+                context,
                 plan.productLimit == -1
-                    ? "منتجات غير محدودة"
-                    : "حتى ${plan.productLimit} منتج",
+                    ? AppLocalizations.of(context)!.unlimited_products
+                    : AppLocalizations.of(context)!.up_to_products(plan.productLimit),
                 true,
               ),
               _buildFeature(
+                context,
                 plan.orderLimit == -1
-                    ? "طلبات غير محدودة"
-                    : "حتى ${plan.orderLimit} طلب شهرياً",
+                    ? AppLocalizations.of(context)!.unlimited_orders
+                    : AppLocalizations.of(context)!.up_to_orders_month(plan.orderLimit),
                 true,
               ),
-              _buildFeature("تقارير أداء متقدمة", plan.hasReports),
-              _buildFeature("دعم فني خاص", plan.hasSpecialSupport),
+              _buildFeature(context, AppLocalizations.of(context)!.advanced_reports, plan.hasReports),
+              _buildFeature(context, AppLocalizations.of(context)!.special_technical_support, plan.hasSpecialSupport),
             ],
           ),
         ),
@@ -213,7 +217,7 @@ class _SubscriptionPaywallState extends State<SubscriptionPaywall> {
     );
   }
 
-  Widget _buildFeature(String text, bool available) {
+  Widget _buildFeature(BuildContext context, String text, bool available) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(

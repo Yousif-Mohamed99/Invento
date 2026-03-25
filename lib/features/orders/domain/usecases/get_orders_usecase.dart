@@ -10,7 +10,7 @@ class GetOrdersUseCase {
     return await repository.getOrders();
   }
 
-  // حساب أرباح الشهر (المبيعات المستلمة فقط أو قيد التنفيذ - نستبعد الملغي)
+  // Calculate monthly profit (received or in-progress orders only - exclude cancelled)
   double calculateMonthlyEarnings(List<OrderEntity> orders) {
     final now = DateTime.now();
     return orders
@@ -23,7 +23,7 @@ class GetOrdersUseCase {
         .fold(0, (sum, item) => sum + item.totalAmount);
   }
 
-  // عدد طلبات اليوم (نستبعد الملغي)
+  // Number of today's orders (exclude cancelled)
   int countTodayOrders(List<OrderEntity> orders) {
     final now = DateTime.now();
     return orders

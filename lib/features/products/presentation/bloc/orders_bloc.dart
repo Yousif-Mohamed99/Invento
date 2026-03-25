@@ -23,7 +23,7 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
         final userId = FirebaseAuth.instance.currentUser?.uid;
 
         if (userId == null) {
-          emit(OrdersError("لم يتم العثور على مستخدم مسجل"));
+          emit(OrdersError("No registered user found"));
 
           return;
         }
@@ -57,7 +57,7 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
           ),
         );
       } catch (e) {
-        emit(OrdersError("فشل تحميل الطلبات: $e"));
+        emit(OrdersError("Failed to load orders: $e"));
       }
     });
 
@@ -68,7 +68,7 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
 
         add(LoadOrdersEvent());
       } catch (e) {
-        emit(OrdersError("فشل في إنشاء الطلب: ${e.toString()}"));
+        emit(OrdersError("Failed to create order: ${e.toString()}"));
       }
     });
   }

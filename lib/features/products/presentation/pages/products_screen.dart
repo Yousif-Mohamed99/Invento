@@ -4,6 +4,7 @@ import 'package:invento/features/products/presentation/pages/product_details_scr
 import '../bloc/products_bloc.dart';
 import '../bloc/products_event.dart';
 import '../bloc/products_state.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
@@ -27,7 +28,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text("مخزن المنتجات"),
+        title: Text(AppLocalizations.of(context)!.product_inventory),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -75,8 +76,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                   color: Colors.grey.shade300,
                                 ),
                                 const SizedBox(height: 12),
-                                const Text(
-                                  "لا توجد منتجات في هذه الفئة",
+                                Text(
+                                  AppLocalizations.of(context)!.no_products_in_category,
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: Colors.blueGrey,
@@ -102,7 +103,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
           } else if (state is ProductsError) {
             return Center(child: Text(state.message));
           }
-          return const Center(child: Text("ابدأ بإضافة منتجاتك"));
+          return Center(child: Text(AppLocalizations.of(context)!.start_adding_products));
         },
       ),
     );
@@ -121,7 +122,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: ChoiceChip(
-                label: const Text("الكل"),
+                label: Text(AppLocalizations.of(context)!.all),
                 selected: _selectedCategory == null,
                 onSelected: (_) => setState(() => _selectedCategory = null),
                 selectedColor: const Color(0xFF2563EB),
@@ -235,6 +236,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
                             child: Image.network(
                               product.imageUrl,
                               fit: BoxFit.cover,
+                              cacheHeight: 200,
+                              cacheWidth: 200,
                             ),
                           )
                           : Icon(
@@ -261,7 +264,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        "${product.sellingPrice} ج.م",
+                        "${product.sellingPrice} ${AppLocalizations.of(context)!.egp}",
                         style: const TextStyle(
                           color: Color(0xFF2563EB),
                           fontWeight: FontWeight.w700,
@@ -295,7 +298,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
         stock > 5
             ? Colors.green.shade50
             : (stock > 0 ? Colors.orange.shade50 : Colors.red.shade50);
-    String label = stock > 0 ? "متوفر: $stock" : "نفد من المخزن";
+    String label = stock > 0 ? AppLocalizations.of(context)!.in_stock(stock) : AppLocalizations.of(context)!.out_of_stock;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -315,15 +318,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   Widget _buildEmptyState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.inventory_2_outlined, size: 80, color: Colors.grey),
-          SizedBox(height: 16),
+          const Icon(Icons.done_all_rounded, color: Colors.green, size: 50),
+          const SizedBox(height: 16),
           Text(
-            "لا توجد منتجات حالياً",
-            style: TextStyle(fontSize: 18, color: Colors.grey),
+            AppLocalizations.of(context)!.inventory_empty,
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
         ],
       ),

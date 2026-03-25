@@ -23,15 +23,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _stockController = TextEditingController();
 
   File? _selectedImage;
-  String _selectedCategory = 'ملابس';
+  String _selectedCategory = 'Clothes';
   bool _isCustomCategory = false;
   final _customCategoryController = TextEditingController();
   final List<String> _defaultCategories = [
-    'ملابس',
-    'أحذية',
-    'عطور',
-    'إكسسوارات',
-    'أدوات منزلية',
+    'Clothes',
+    'Shoes',
+    'Perfumes',
+    'Accessories',
+    'Home Tools',
   ];
 
   final _sizeNameController = TextEditingController();
@@ -70,7 +70,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: const Text(
-          "إضافة منتج جديد",
+          "Add New Product",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Color(0xFF1E3A8A),
@@ -86,7 +86,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
           if (state is ProductsSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text("تم إضافة المنتج بنجاح!"),
+                content: Text("Product added successfully!"),
                 backgroundColor: Colors.green,
               ),
             );
@@ -109,7 +109,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               children: [
                 // --- Image Section ---
                 _buildSectionCard(
-                  title: "صورة المنتج",
+                  title: "Product Image",
                   icon: Icons.image_outlined,
                   child: _buildImagePicker(),
                 ),
@@ -117,13 +117,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                 // --- Product Info Section ---
                 _buildSectionCard(
-                  title: "بيانات المنتج",
+                  title: "Product Data",
                   icon: Icons.inventory_2_rounded,
                   child: Column(
                     children: [
                       _buildTextFormField(
                         controller: _nameController,
-                        label: "اسم المنتج",
+                        label: "Product Name",
                         icon: Icons.edit_note_rounded,
                       ),
                       const SizedBox(height: 15),
@@ -134,7 +134,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           Expanded(
                             child: _buildTextFormField(
                               controller: _priceController,
-                              label: "سعر البيع",
+                              label: "Selling Price",
                               icon: Icons.payments_outlined,
                               keyboardType: TextInputType.number,
                             ),
@@ -143,7 +143,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           Expanded(
                             child: _buildTextFormField(
                               controller: _costController,
-                              label: "التكلفة",
+                              label: "Cost",
                               icon: Icons.money_off_outlined,
                               keyboardType: TextInputType.number,
                             ),
@@ -155,15 +155,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         controller: _stockController,
                         label:
                             _selectedSizes.isEmpty
-                                ? "الكمية الكلية"
-                                : "الكمية (محسوبة من المقاسات)",
+                                ? "Total Quantity"
+                                : "Quantity (calculated from sizes)",
                         icon: Icons.inventory_outlined,
                         keyboardType: TextInputType.number,
                         enabled: _selectedSizes.isEmpty,
                         validator:
                             (v) =>
                                 (_selectedSizes.isEmpty && v!.isEmpty)
-                                    ? "مطلوب"
+                                    ? "Required"
                                     : null,
                       ),
                     ],
@@ -173,7 +173,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                 // --- Sizes Section ---
                 _buildSectionCard(
-                  title: "المقاسات المتاحة",
+                  title: "Available Sizes",
                   icon: Icons.straighten_rounded,
                   child: _buildSizeManager(),
                 ),
@@ -289,7 +289,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         filled: true,
         fillColor: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
       ),
-      validator: validator ?? (v) => v!.isEmpty ? "هذا الحقل مطلوب" : null,
+      validator: validator ?? (v) => v!.isEmpty ? "This field is required" : null,
     );
   }
 
@@ -317,7 +317,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      "اضغط لاختيار صورة المنتج",
+                      "Tap to select product image",
                       style: TextStyle(
                         color: Colors.blueGrey,
                         fontSize: 14,
@@ -346,7 +346,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               child: TextFormField(
                 controller: _sizeNameController,
                 decoration: _inputDecoration(
-                  label: "المقاس (L, 42...)",
+                  label: "Size (L, 42...)",
                   icon: Icons.straighten,
                 ),
               ),
@@ -358,7 +358,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 controller: _sizeQtyController,
                 keyboardType: TextInputType.number,
                 decoration: _inputDecoration(
-                  label: "الكمية",
+                  label: "Quantity",
                   icon: Icons.numbers,
                 ).copyWith(prefixIcon: null),
               ),
@@ -428,9 +428,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
           Expanded(
             child: _buildTextFormField(
               controller: _customCategoryController,
-              label: "اكتب اسم الفئة الجديدة",
+              label: "Type new category name",
               icon: Icons.category_outlined,
-              validator: (v) => v!.isEmpty ? "اكتب اسم الفئة" : null,
+              validator: (v) => v!.isEmpty ? "Enter category name" : null,
             ),
           ),
           const SizedBox(width: 8),
@@ -479,7 +479,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               SizedBox(width: 8),
               Text(
-                "إضافة فئة جديدة",
+                "Add New Category",
                 style: TextStyle(
                   color: Color(0xFF2563EB),
                   fontWeight: FontWeight.w600,
@@ -497,7 +497,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         }
       },
       decoration: _inputDecoration(
-        label: "فئة المنتج",
+        label: "Product Category",
         icon: Icons.category_outlined,
       ),
     );
@@ -564,12 +564,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 );
               } else if (_selectedImage == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("من فضلك اختر صورة")),
+                  const SnackBar(content: Text("Please select an image")),
                 );
               }
             },
             child: const Text(
-              "حفظ المنتج في المخزن",
+              "Save Product to Stock",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:invento/features/orders/domain/entities/order_entity.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class OrderInvoiceScreen extends StatelessWidget {
   final OrderEntity order;
@@ -13,33 +14,33 @@ class OrderInvoiceScreen extends StatelessWidget {
 
     // Construct the WhatsApp message body
     final StringBuffer sb = StringBuffer();
-    sb.writeln("📋 *بوليصة شحن طلب جديد*");
+    sb.writeln("📋 *${AppLocalizations.of(context)!.shipping_label}*");
     sb.writeln("━━━━━━━━━━━━━━━");
-    sb.writeln("🆔 *رقم الطلب:* ${order.id!.substring(0, 8)}...");
-    sb.writeln("📅 *التاريخ:* $dateStr");
+    sb.writeln("🆔 *${AppLocalizations.of(context)!.order_id}* ${order.id!.substring(0, 8)}...");
+    sb.writeln("📅 *${AppLocalizations.of(context)!.date}* $dateStr");
     sb.writeln("");
-    sb.writeln("👤 *بيانات العميل:*");
-    sb.writeln("الاسم: ${order.customerName}");
-    sb.writeln("رقم الهاتف: ${order.customerPhone}");
-    sb.writeln("المحافظة: ${order.city}");
-    sb.writeln("العنوان: ${order.shippingAddress}");
+    sb.writeln("👤 *${AppLocalizations.of(context)!.customer_details_label}*");
+    sb.writeln("${AppLocalizations.of(context)!.name}: ${order.customerName}");
+    sb.writeln("${AppLocalizations.of(context)!.phone}: ${order.customerPhone}");
+    sb.writeln("${AppLocalizations.of(context)!.city}: ${order.city}");
+    sb.writeln("${AppLocalizations.of(context)!.detailed_address}: ${order.shippingAddress}");
     sb.writeln("");
-    sb.writeln("📦 *تفاصيل المنتجات:*");
+    sb.writeln("📦 *${AppLocalizations.of(context)!.product_details_label}*");
 
     for (var item in order.items) {
       String sizeTxt =
-          item.selectedSize != null ? " (مقاس: ${item.selectedSize})" : "";
+          item.selectedSize != null ? " (${AppLocalizations.of(context)!.size}: ${item.selectedSize})" : "";
       sb.writeln("- ${item.quantity}x ${item.productName}$sizeTxt");
     }
 
     sb.writeln("━━━━━━━━━━━━━━━");
     sb.writeln(
-      "💰 *إجمالي المنتجات:* ${order.totalAmount - order.deliveryFee} ج.م",
+      "💰 *${AppLocalizations.of(context)!.product_total}:* ${order.totalAmount - order.deliveryFee} ${AppLocalizations.of(context)!.egp}",
     );
-    sb.writeln("🚚 *مصاريف الشحن:* ${order.deliveryFee} ج.م");
-    sb.writeln("💵 *الإجمالي الكلي:* *${order.totalAmount} ج.م*");
+    sb.writeln("🚚 *${AppLocalizations.of(context)!.delivery_fee}:* ${order.deliveryFee} ${AppLocalizations.of(context)!.egp}");
+    sb.writeln("💵 *${AppLocalizations.of(context)!.total_amount}:* *${order.totalAmount} ${AppLocalizations.of(context)!.egp}*");
     sb.writeln("━━━━━━━━━━━━━━━");
-    sb.writeln("✨ شكراً لتعاملك معنا!");
+    sb.writeln("✨ ${AppLocalizations.of(context)!.thank_you_business}");
 
     final String encodedMsg = Uri.encodeComponent(sb.toString());
 
@@ -64,9 +65,9 @@ class OrderInvoiceScreen extends StatelessWidget {
         } else {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text(
-                  "لا يمكن فتح وتساب، الرجاء التأكد من تثبيت التطبيق.",
+                  AppLocalizations.of(context)!.whatsapp_error,
                 ),
               ),
             );
@@ -76,7 +77,9 @@ class OrderInvoiceScreen extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("حدث خطأ أثناء محاولة فتح واتساب.")),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.generic_error),
+          ),
         );
       }
     }
@@ -90,9 +93,9 @@ class OrderInvoiceScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text(
-          "بوليصة الشحن",
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.shipping_label,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
@@ -139,7 +142,7 @@ class OrderInvoiceScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              "طلب #${order.id!.substring(0, 6)}",
+                              "Order #${order.id!.substring(0, 6)}",
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -167,7 +170,7 @@ class OrderInvoiceScreen extends StatelessWidget {
                       children: [
                         // Customer Details
                         const Text(
-                          "بيانات العميل",
+                          "Customer Details",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -177,26 +180,26 @@ class OrderInvoiceScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         _buildDetailRow(
                           Icons.person,
-                          "الاسم",
+                          "Name",
                           order.customerName,
                         ),
                         const SizedBox(height: 8),
                         _buildDetailRow(
                           Icons.phone,
-                          "الهاتف",
+                          "Phone",
                           order.customerPhone,
                           isPhone: true,
                         ),
                         const SizedBox(height: 8),
                         _buildDetailRow(
                           Icons.location_city,
-                          "المحافظة",
+                          "City",
                           order.city,
                         ),
                         const SizedBox(height: 8),
                         _buildDetailRow(
                           Icons.map,
-                          "العنوان",
+                          "Address",
                           order.shippingAddress,
                         ),
 
@@ -208,7 +211,7 @@ class OrderInvoiceScreen extends StatelessWidget {
 
                         // Products
                         const Text(
-                          "المنتجات",
+                          "Products",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -232,7 +235,7 @@ class OrderInvoiceScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  "${item.quantity * item.priceAtTimeOfOrder} ج.م",
+                                  "${item.quantity * item.priceAtTimeOfOrder} EGP",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF2563EB),
@@ -249,11 +252,11 @@ class OrderInvoiceScreen extends StatelessWidget {
                         ),
 
                         _buildFinancialRow(
-                          "إجمالي المنتجات",
+                          "Product Total",
                           order.totalAmount - order.deliveryFee,
                         ),
                         const SizedBox(height: 8),
-                        _buildFinancialRow("مصاريف الشحن", order.deliveryFee),
+                        _buildFinancialRow("Shipping Fee", order.deliveryFee),
                         const SizedBox(height: 12),
 
                         Container(
@@ -266,7 +269,7 @@ class OrderInvoiceScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
-                                "الإجمالي الكلي",
+                                "Total Amount",
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -274,7 +277,7 @@ class OrderInvoiceScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                "${order.totalAmount} ج.م",
+                                "${order.totalAmount} EGP",
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
@@ -310,7 +313,7 @@ class OrderInvoiceScreen extends StatelessWidget {
                 onPressed: () => _shareViaWhatsApp(context),
                 icon: const Icon(Icons.share, color: Colors.white),
                 label: const Text(
-                  "مشاركة بوليصة الشحن عبر واتساب",
+                  "Share Shipping Label via WhatsApp",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -325,7 +328,7 @@ class OrderInvoiceScreen extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text(
-                "رجوع",
+                "Back",
                 style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
             ),
@@ -377,7 +380,7 @@ class OrderInvoiceScreen extends StatelessWidget {
           style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
         ),
         Text(
-          "$amount ج.م",
+          "$amount EGP",
           style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
         ),
       ],

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:invento/features/home/presentation/pages/main_wrapper.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -20,16 +21,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _storeNameController = TextEditingController();
-  final _addressController = TextEditingController();
 
-  String _selectedCity = 'القاهرة';
+  String _selectedCity = 'Cairo';
   final List<String> _cities = [
-    'القاهرة',
-    'الجيزة',
-    'الإسكندرية',
-    'المنصورة',
-    'طنطا',
-    'أسيوط',
+    'Cairo',
+    'Giza',
+    'Alexandria',
+    'Dakahlia',
+    'Red Sea',
+    'Beheira',
+    'Fayoum',
+    'Gharbia',
+    'Ismailia',
+    'Menofia',
+    'Minya',
+    'Qalyubia',
+    'New Valley',
+    'Suez',
+    'Aswan',
+    'Assiut',
+    'Beni Suef',
+    'Port Said',
+    'Damietta',
+    'Sharkia',
+    'South Sinai',
+    'Kafr El Sheikh',
+    'Matrouh',
+    'Luxor',
+    'Qena',
+    'North Sinai',
+    'Sohag',
   ];
 
   Future<void> _launchURL(String url) async {
@@ -44,9 +65,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          "تسجيل تاجر جديد",
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.new_merchant_registration,
+          style: const TextStyle(
             color: Color(0xFF1E3A8A),
             fontWeight: FontWeight.bold,
           ),
@@ -63,6 +84,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               context,
               MaterialPageRoute(builder: (context) => const MainWrapper()),
               (route) => false,
+            );
+          } else if (state is AuthPasswordResetSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  AppLocalizations.of(context)!.password_reset_sent,
+                ),
+                backgroundColor: Colors.green,
+              ),
             );
           } else if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -88,8 +118,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     fit: BoxFit.contain,
                   ),
                 ),
-                const Text(
-                  "أنشئ حساب تاجرك الآن",
+                Text(
+                  AppLocalizations.of(context)!.join_invento_today,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 22,
@@ -101,14 +131,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 _buildTextFormField(
                   controller: _storeNameController,
-                  label: "اسم المتجر / البراند",
+                  label: AppLocalizations.of(context)!.store_name,
                   icon: Icons.store_outlined,
                 ),
                 const SizedBox(height: 15),
 
                 _buildTextFormField(
                   controller: _emailController,
-                  label: "البريد الإلكتروني",
+                  label: AppLocalizations.of(context)!.email,
                   icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                 ),
@@ -116,66 +146,79 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 _buildTextFormField(
                   controller: _passwordController,
-                  label: "كلمة المرور",
+                  label: AppLocalizations.of(context)!.password,
                   icon: Icons.lock_outline,
                   obscureText: true,
                 ),
                 const SizedBox(height: 15),
 
-                DropdownButtonFormField<String>(
-                  dropdownColor: Colors.white,
-                  value: _selectedCity,
-                  icon: const Icon(
-                    Icons.arrow_drop_down,
-                    color: Color(0xFF2563EB),
-                  ),
-                  style: const TextStyle(fontSize: 16, color: Colors.black87),
-                  decoration: InputDecoration(
-                    labelText: "المحافظة",
-                    labelStyle: const TextStyle(color: Colors.blueGrey),
-                    prefixIcon: const Icon(
-                      Icons.location_city_outlined,
-                      color: Color(0xFF2563EB),
-                      size: 22,
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade50,
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 18.0,
-                      horizontal: 16.0,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: Colors.grey.shade200,
-                        width: 1.5,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: Color(0xFF2563EB),
-                        width: 2,
-                      ),
-                    ),
-                  ),
+                DropdownSearch<String>(
                   items:
-                      _cities
-                          .map(
-                            (city) => DropdownMenuItem(
-                              value: city,
-                              child: Text(city),
-                            ),
-                          )
-                          .toList(),
-                  onChanged: (val) => setState(() => _selectedCity = val!),
-                ),
-                const SizedBox(height: 15),
-
-                _buildTextFormField(
-                  controller: _addressController,
-                  label: "عنوان المخزن بالتفصيل",
-                  icon: Icons.map_outlined,
+                      (filter, _) =>
+                          _cities.where((e) => e.contains(filter)).toList(),
+                  selectedItem: _selectedCity,
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() => _selectedCity = val);
+                    }
+                  },
+                  decoratorProps: DropDownDecoratorProps(
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.city,
+                      labelStyle: const TextStyle(color: Colors.blueGrey),
+                      prefixIcon: const Icon(
+                        Icons.location_city_outlined,
+                        color: Color(0xFF2563EB),
+                        size: 22,
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 18.0,
+                        horizontal: 16.0,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade200,
+                          width: 1.5,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF2563EB),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  popupProps: PopupProps.menu(
+                    showSelectedItems: true,
+                    showSearchBox: true,
+                    searchFieldProps: TextFieldProps(
+                      decoration: InputDecoration(
+                        hintText: "Search for city...",
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF2563EB),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                    menuProps: MenuProps(
+                      backgroundColor: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      elevation: 8,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 30),
 
@@ -220,13 +263,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 password: _passwordController.text,
                                 storeName: _storeNameController.text,
                                 city: _selectedCity,
-                                address: _addressController.text,
                               ),
                             );
                           }
                         },
-                        child: const Text(
-                          "إنشاء حسابي الآن",
+                        child: Text(
+                          AppLocalizations.of(context)!.create_account,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -260,8 +302,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     color: Color(0xFFEA4335),
                     size: 18,
                   ),
-                  label: const Text(
-                    "التسجيل بواسطة جوجل",
+                  label: Text(
+                    AppLocalizations.of(context)!.signup_with_google,
                     style: TextStyle(
                       color: Color(0xFF1E3A8A),
                       fontWeight: FontWeight.bold,
@@ -276,8 +318,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Divider(thickness: 1),
                 ),
 
-                const Text(
-                  "تواصل معنا",
+                Text(
+                  AppLocalizations.of(context)!.contact_us,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
@@ -296,9 +338,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(width: 20),
                     _buildSocialIcon(
-                      icon: FontAwesomeIcons.whatsapp,
-                      color: const Color(0xFF25D366),
-                      url: "https://wa.me/${dotenv.env['SUPPORT_PHONE']}",
+                      icon: FontAwesomeIcons.tiktok,
+                      color: Colors.black,
+                      url: "https://www.tiktok.com/@youssifelshafei/",
                     ),
                   ],
                 ),
@@ -349,7 +391,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           borderSide: const BorderSide(color: Colors.redAccent, width: 2),
         ),
       ),
-      validator: (v) => v!.isEmpty ? "هذا الحقل مطلوب" : null,
+      validator:
+          (v) =>
+              v!.isEmpty ? AppLocalizations.of(context)!.field_required : null,
     );
   }
 

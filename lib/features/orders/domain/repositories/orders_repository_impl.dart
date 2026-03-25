@@ -83,7 +83,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
       final pendingOrders =
           ordersSnap.docs.where((doc) {
             final data = doc.data() as Map<String, dynamic>;
-            return data['status'] == 'pending'; // فلترة يدوي
+            return data['status'] == 'pending'; // Manual filtering
           }).toList();
 
       for (var doc in pendingOrders) {
@@ -91,8 +91,8 @@ class OrdersRepositoryImpl implements OrdersRepository {
         activities.add(
           ActivityModel(
             id: "order_${doc.id}", // Add unique ID
-            title: "أوردر جديد: ${data['customerName']}",
-            subtitle: "أوردر جديد ينتظر المراجعة والتحضير",
+            title: "New order: ${data['customerName']}",
+            subtitle: "New order waiting for review and preparation",
             timestamp:
                 (data['createdAt'] as Timestamp? ?? Timestamp.now()).toDate(),
             type: ActivityType.newOrder,
@@ -118,8 +118,8 @@ class OrdersRepositoryImpl implements OrdersRepository {
         activities.add(
           ActivityModel(
             id: "stock_${doc.id}",
-            title: "تنبيه مخزن: ${product.name}",
-            subtitle: "الكمية المتبقية حرجة جداً (${product.totalStock} قطعة)",
+            title: "Stock Alert: ${product.name}",
+            subtitle: "Critical stock level (${product.totalStock} items left)",
             timestamp: activityTime,
             type: ActivityType.lowStock,
             referenceId: doc.id,
@@ -144,7 +144,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
 
     final data = doc.data();
     if (data == null || data['userId'] != userId) {
-      throw Exception("غير مصرح لك بالوصول لهذا الطلب");
+      throw Exception("You are not authorized to access this order");
     }
 
     return OrderEntity.fromMap(data, doc.id);
@@ -163,7 +163,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
       DocumentReference orderRef = firestore.collection('orders').doc(orderId);
       DocumentSnapshot orderSnap = await orderRef.get();
 
-      if (!orderSnap.exists) throw Exception("الطلب غير موجود");
+      if (!orderSnap.exists) throw Exception("Order not found");
 
       final orderData = orderSnap.data() as Map<String, dynamic>;
       final List items = orderData['items'] ?? [];
@@ -216,7 +216,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
 
       await batch.commit();
     } catch (e) {
-      throw Exception("فشل التحديث: $e");
+      throw Exception("Update failed: $e");
     }
   }
 
@@ -226,12 +226,12 @@ class OrdersRepositoryImpl implements OrdersRepository {
 
     try {
       await firestore.runTransaction((transaction) async {
-        // 1. تجهيز مراجع المستندات (References)
+        // 1. Prepare Document References
         DocumentReference orderRef = firestore
             .collection('orders')
             .doc(order.id);
 
-        // سنقوم بجلب بيانات كل المنتجات أولاً (القراءة)
+        // Fetch all product data first (Read)
         Map<String, DocumentSnapshot> productSnapshots = {};
         for (var item in order.items) {
           DocumentReference productRef = firestore
@@ -240,15 +240,15 @@ class OrdersRepositoryImpl implements OrdersRepository {
           productSnapshots[item.productId] = await transaction.get(productRef);
         }
 
-        // 2. الآن نبدأ عمليات الكتابة (Writes) بعد انتهاء كل القراءات
+        // 2. Start Write operations after all reads are finished
 
-        // تحديث حالة الأوردر
+        // Update order status
         transaction.update(orderRef, {
           'status': OrderStatus.cancelled.name,
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
-        // تحديث المنتجات
+        // Update products
         for (var item in order.items) {
           final productSnap = productSnapshots[item.productId];
 
@@ -257,7 +257,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
             int totalStock = productData['stockQuantity'] ?? 0;
             List<dynamic> sizesList = List.from(productData['sizes'] ?? []);
 
-            // تحديث المقاسات داخل القائمة
+            // Update sizes in list
             for (var i = 0; i < sizesList.length; i++) {
               if (sizesList[i]['size'] == item.selectedSize) {
                 sizesList[i]['quantity'] =
@@ -266,7 +266,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
               }
             }
 
-            // تنفيذ الكتابة
+            // Perform write
             transaction.update(productSnap.reference, {
               'stockQuantity': totalStock + item.quantity,
               'sizes': sizesList,
@@ -276,7 +276,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
         }
       });
     } catch (e) {
-      throw Exception("فشل إلغاء الطلب وإرجاع المخزن");
+      throw Exception("Failed to cancel order and restore stock");
     }
   }
 
@@ -300,7 +300,7 @@ class OrdersRepositoryImpl implements OrdersRepository {
                 return order.status != OrderStatus.cancelled;
               }).toList();
 
-          // ترتيب الأحدث أولاً
+          // Sort by newest first
           activeOrders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
           return activeOrders;

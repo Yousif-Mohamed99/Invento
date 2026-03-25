@@ -10,6 +10,7 @@ import 'package:invento/features/products/presentation/bloc/orders_event.dart';
 import 'package:invento/features/products/presentation/bloc/products_bloc.dart';
 import 'package:invento/features/products/presentation/bloc/products_event.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class OrderDetailsScreen extends StatelessWidget {
   final String orderId;
@@ -30,9 +31,9 @@ class OrderDetailsScreen extends StatelessWidget {
               color: Colors.black87,
             ),
             children: [
-              const TextSpan(
-                text: "تفاصيل طلب ",
-                style: TextStyle(
+              TextSpan(
+                text: "${AppLocalizations.of(context)!.order_details_for} ",
+                style: const TextStyle(
                   color: Color(0xFF1E3A8A),
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -57,7 +58,7 @@ class OrderDetailsScreen extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) return const Center(child: Text("حدث خطأ ما"));
+          if (snapshot.hasError) return Center(child: Text(AppLocalizations.of(context)!.inventory_empty));
 
           final order = snapshot.data!;
 
@@ -66,25 +67,25 @@ class OrderDetailsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStatusCard(order.status),
+                _buildStatusCard(context, order.status),
                 const SizedBox(height: 16),
-                const Text(
-                  "بيانات العميل",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                Text(
+                  AppLocalizations.of(context)!.customer_details,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 8),
-                _buildCustomerInfoCard(order),
+                _buildCustomerInfoCard(context, order),
                 const SizedBox(height: 16),
 
-                const Text(
-                  "المنتجات",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                Text(
+                  AppLocalizations.of(context)!.products,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 8),
-                _buildOrderItemsList(order.items),
+                _buildOrderItemsList(context, order.items),
                 const SizedBox(height: 16),
 
-                _buildFinancialSummary(order),
+                _buildFinancialSummary(context, order),
 
                 const SizedBox(height: 32),
 
@@ -98,7 +99,7 @@ class OrderDetailsScreen extends StatelessWidget {
   }
 }
 
-Widget _buildStatusCard(OrderStatus status) {
+Widget _buildStatusCard(BuildContext context, OrderStatus status) {
   Color statusColor =
       status == OrderStatus.pending ? Colors.orange.shade700 : Colors.green;
   Color bgColor =
@@ -106,7 +107,7 @@ Widget _buildStatusCard(OrderStatus status) {
           ? Colors.orange.shade50
           : Colors.green.shade50;
   String statusText =
-      status == OrderStatus.pending ? "قيد الانتظار" : "تم الشحن";
+      status == OrderStatus.pending ? AppLocalizations.of(context)!.pending : AppLocalizations.of(context)!.shipped;
 
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -124,9 +125,9 @@ Widget _buildStatusCard(OrderStatus status) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          "حالة الطلب",
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context)!.order_status,
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
             color: Color(0xFF1E3A8A),
@@ -164,7 +165,7 @@ Widget _buildStatusCard(OrderStatus status) {
   );
 }
 
-Widget _buildCustomerInfoCard(OrderEntity order) {
+Widget _buildCustomerInfoCard(BuildContext context, OrderEntity order) {
   return Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
@@ -237,9 +238,9 @@ Widget _buildCustomerInfoCard(OrderEntity order) {
               color: Colors.redAccent,
             ),
           ),
-          title: const Text(
-            "عنوان التوصيل",
-            style: TextStyle(fontWeight: FontWeight.bold),
+          title: Text(
+            AppLocalizations.of(context)!.delivery_address,
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Text("${order.city} - ${order.shippingAddress}"),
         ),
@@ -248,8 +249,8 @@ Widget _buildCustomerInfoCard(OrderEntity order) {
   );
 }
 
-Widget _buildFinancialSummary(OrderEntity order) {
-  // حساب إجمالي المنتجات قبل الشحن
+Widget _buildFinancialSummary(BuildContext context, OrderEntity order) {
+  // Calculate total products before shipping
   final double subTotal = order.totalAmount - order.deliveryFee;
 
   return Container(
@@ -267,8 +268,8 @@ Widget _buildFinancialSummary(OrderEntity order) {
     ),
     child: Column(
       children: [
-        _buildPriceRow("إجمالي المنتجات", "$subTotal ج.م"),
-        _buildPriceRow("مصاريف الشحن", "${order.deliveryFee} ج.م"),
+        _buildPriceRow(context, AppLocalizations.of(context)!.items_total, "$subTotal ${AppLocalizations.of(context)!.egp}"),
+        _buildPriceRow(context, AppLocalizations.of(context)!.delivery_fee, "${order.deliveryFee} ${AppLocalizations.of(context)!.egp}"),
         const Divider(height: 24),
         Container(
           padding: const EdgeInsets.all(12),
@@ -277,8 +278,9 @@ Widget _buildFinancialSummary(OrderEntity order) {
             borderRadius: BorderRadius.circular(8),
           ),
           child: _buildPriceRow(
-            "الإجمالي الكلي",
-            "${order.totalAmount} ج.م",
+            context,
+            AppLocalizations.of(context)!.grand_total,
+            "${order.totalAmount} ${AppLocalizations.of(context)!.egp}",
             isTotal: true,
           ),
         ),
@@ -287,7 +289,7 @@ Widget _buildFinancialSummary(OrderEntity order) {
   );
 }
 
-Widget _buildPriceRow(String label, String value, {bool isTotal = false}) {
+Widget _buildPriceRow(BuildContext context, String label, String value, {bool isTotal = false}) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4),
     child: Row(
@@ -312,7 +314,7 @@ Widget _buildPriceRow(String label, String value, {bool isTotal = false}) {
 }
 
 Widget _buildActionButtons(BuildContext context, OrderEntity order) {
-  // لو الطلب ملغي فعلاً، مش هنظهر أزرار تحكم
+  // If order is already cancelled, don't show control buttons
   if (order.status == OrderStatus.cancelled) {
     return Container(
       width: double.infinity,
@@ -321,10 +323,10 @@ Widget _buildActionButtons(BuildContext context, OrderEntity order) {
         color: Colors.red.shade50,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Center(
+      child: Center(
         child: Text(
-          "هذا الطلب ملغي",
-          style: TextStyle(
+          AppLocalizations.of(context)!.order_cancelled,
+          style: const TextStyle(
             color: Colors.red,
             fontWeight: FontWeight.bold,
             fontSize: 16,
@@ -336,7 +338,7 @@ Widget _buildActionButtons(BuildContext context, OrderEntity order) {
 
   return Column(
     children: [
-      // زر التحديث لـ "تم الشحن" (يظهر فقط لو كان pending)
+      // Update button for "Shipped" (shows only if pending)
       if (order.status == OrderStatus.pending)
         Container(
           decoration: BoxDecoration(
@@ -365,9 +367,9 @@ Widget _buildActionButtons(BuildContext context, OrderEntity order) {
             ),
             onPressed: () => _showUpdateStatusDialog(context, order.id!),
             icon: const Icon(Icons.local_shipping, color: Colors.white),
-            label: const Text(
-              "تحديث لتم الشحن",
-              style: TextStyle(
+            label: Text(
+              AppLocalizations.of(context)!.update_to_shipped,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -378,7 +380,7 @@ Widget _buildActionButtons(BuildContext context, OrderEntity order) {
 
       const SizedBox(height: 16),
 
-      // زر إلغاء الطلب (يظهر في كل الحالات ما عدا الملغي أو المسلم)
+      // Cancel order button (shows in all cases except cancelled or delivered)
       SizedBox(
         width: double.infinity,
         height: 55,
@@ -390,11 +392,11 @@ Widget _buildActionButtons(BuildContext context, OrderEntity order) {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          onPressed: () => _showCancelDialog(context, order), // دالة الإلغاء
+          onPressed: () => _showCancelDialog(context, order), // Cancel function
           icon: const Icon(Icons.cancel_outlined),
-          label: const Text(
-            "إلغاء الطلب",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          label: Text(
+            AppLocalizations.of(context)!.cancel_order,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
       ),
@@ -426,20 +428,20 @@ void _showCancelDialog(BuildContext context, OrderEntity order) {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                "تأكيد الإلغاء",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              Text(
+                AppLocalizations.of(context)!.confirm_cancellation,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
             ],
           ),
-          content: const Text(
-            "هل أنت متأكد من إلغاء هذا الطلب؟ سيتم إرجاع المنتجات للمخزن أوتوماتيكياً.",
-            style: TextStyle(fontSize: 15, color: Colors.black54),
+          content: Text(
+            AppLocalizations.of(context)!.cancel_order_confirm_body,
+            style: const TextStyle(fontSize: 15, color: Colors.black54),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("تراجع", style: TextStyle(color: Colors.grey)),
+              child: Text(AppLocalizations.of(context)!.undo, style: const TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -462,16 +464,16 @@ void _showCancelDialog(BuildContext context, OrderEntity order) {
                 if (context.mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("تم إلغاء الطلب وإرجاع المخزن"),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context)!.order_cancelled_inventory_restored),
                       backgroundColor: Colors.redAccent,
                     ),
                   );
                 }
               },
-              child: const Text(
-                "إلغاء الطلب الآن",
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context)!.cancel_order_now,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -506,20 +508,20 @@ void _showUpdateStatusDialog(BuildContext context, String orderId) {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                "تحديث الحالة",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              Text(
+                AppLocalizations.of(context)!.update_status,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
             ],
           ),
-          content: const Text(
-            "هل أنت متأكد من تغيير حالة الطلب إلى 'تم الشحن'؟",
-            style: TextStyle(fontSize: 15, color: Colors.black54),
+          content: Text(
+            AppLocalizations.of(context)!.confirm_shipped_status_body,
+            style: const TextStyle(fontSize: 15, color: Colors.black54),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("إلغاء", style: TextStyle(color: Colors.grey)),
+              child: Text(AppLocalizations.of(context)!.cancel, style: const TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -546,16 +548,16 @@ void _showUpdateStatusDialog(BuildContext context, String orderId) {
                   Navigator.pop(context);
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("تم تحديث الطلب بنجاح 🚀"),
-                      backgroundColor: Color(0xFF1E3A8A),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context)!.order_updated_successfully),
+                      backgroundColor: const Color(0xFF1E3A8A),
                     ),
                   );
                 }
               },
-              child: const Text(
-                "تأكيد",
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context)!.confirm,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -566,7 +568,7 @@ void _showUpdateStatusDialog(BuildContext context, String orderId) {
   );
 }
 
-Widget _buildOrderItemsList(List<OrderItem> items) {
+Widget _buildOrderItemsList(BuildContext context, List<OrderItem> items) {
   return Container(
     padding: const EdgeInsets.symmetric(vertical: 8.0),
     decoration: BoxDecoration(
@@ -609,9 +611,9 @@ Widget _buildOrderItemsList(List<OrderItem> items) {
               color: Color(0xFF1E3A8A),
             ),
           ),
-          subtitle: Text("الكمية: ${item.quantity}"),
+          subtitle: Text("${AppLocalizations.of(context)!.quantity}: ${item.quantity}"),
           trailing: Text(
-            "${item.priceAtTimeOfOrder * item.quantity} ج.م",
+            "${item.priceAtTimeOfOrder * item.quantity} ${AppLocalizations.of(context)!.egp}",
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Color(0xFF2563EB),

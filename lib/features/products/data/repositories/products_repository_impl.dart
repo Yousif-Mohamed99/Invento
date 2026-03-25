@@ -37,7 +37,7 @@ class ProductsRepositoryImpl implements ProductsRepository {
     if (doc.exists) {
       return ProductModel.fromSnapshot(doc);
     } else {
-      throw Exception("المنتج غير موجود");
+      throw Exception("Product not found");
     }
   }
 

@@ -28,7 +28,7 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
         final products = await getProductsUseCase();
         emit(ProductsLoaded(List<ProductEntity>.from(products)));
       } catch (e) {
-        emit(ProductsError("عفواً، حدث خطأ أثناء تحميل المنتجات"));
+        emit(ProductsError("Sorry, an error occurred while loading products"));
       }
     });
 
@@ -62,7 +62,7 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
         emit(ProductsSuccess());
         add(LoadProductsEvent());
       } catch (e) {
-        emit(ProductsError("فشل إضافة المنتج: ${e.toString()}"));
+        emit(ProductsError("Failed to add product: ${e.toString()}"));
       }
     });
 
@@ -71,7 +71,7 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
         await deleteProductUseCase(event.productId);
         add(LoadProductsEvent());
       } catch (e) {
-        emit(ProductsError("فشل حذف المنتج"));
+        emit(ProductsError("Failed to delete product"));
       }
     });
 
@@ -82,7 +82,7 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
         emit(ProductsSuccess());
         add(LoadProductsEvent());
       } catch (e) {
-        emit(ProductsError("فشل تحديث المنتج"));
+        emit(ProductsError("Failed to update product"));
       }
     });
   }

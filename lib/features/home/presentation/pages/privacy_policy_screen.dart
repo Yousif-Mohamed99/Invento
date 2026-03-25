@@ -9,7 +9,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: const Text(
-          "سياسة الخصوصية",
+          "Privacy Policy",
           style: TextStyle(
             color: Color(0xFF1E3A8A),
             fontWeight: FontWeight.bold,
@@ -35,46 +35,46 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             _buildCard(
-              title: "مقدمة",
+              title: "Introduction",
               content:
-                  "مرحباً بك في Invento.\n\n"
-                  "نحن نلتزم بحماية خصوصية بياناتك وتوفير بيئة آمنة لإدارة تجارتك. توضح هذه السياسة كيف نجمع ونستخدم بياناتك بشكل شفاف.",
+                  "Welcome to Invento.\n\n"
+                  "We are committed to protecting your data privacy and providing a secure environment for managing your business. This policy explains how we collect and use your data transparently.",
             ),
 
             _buildCard(
-              title: "1. البيانات التي نجمعها",
+              title: "1. Data We Collect",
               content:
-                  "• بيانات الهوية: (الاسم، البريد الإلكتروني، واسم المتجر).\n"
-                  "• بيانات التجارة: (المنتجات، المخازن، والطلبات) لتسهيل إدارتها.\n"
-                  "• بيانات التواصل: رقم الهاتف في حال التواصل مع الدعم الفني.",
+                  "• Identity Data: (Name, email, and store name).\n"
+                  "• Business Data: (Products, stock, and orders) to facilitate management.\n"
+                  "• Contact Data: Phone number in case of contact with technical support.",
             ),
 
             _buildCard(
-              title: "2. كيف نستخدم بياناتك؟",
+              title: "2. How We Use Your Data?",
               content:
-                  "نستخدم البيانات لإدارة حسابك، توفير ميزات التطبيق، والتواصل معك بخصوص اشتراكك الشهري أو لتقديم الدعم الفني والتقني.",
+                  "We use the data to manage your account, provide app features, and communicate with you regarding your monthly subscription or to provide technical support.",
             ),
 
             _buildCard(
-              title: "3. طرق الدفع وتفعيل الاشتراك",
+              title: "3. Payment Methods & Subscription Activation",
               content:
-                  "يتم تفعيل الاشتراك حالياً من خلال التواصل المباشر مع الدعم الفني عبر (واتساب).\n\n"
-                  "بمجرد تأكيد عملية التحويل، يتم تفعيل حسابك يدوياً. نحن لا نطلب منك أي بيانات سرية "
-                  "مثل أرقام الفيزا أو كلمات مرور البنك داخل التطبيق.",
+                  "Subscription is currently activated through direct communication with technical support via (WhatsApp).\n\n"
+                  "Once the transfer is confirmed, your account is activated manually. We do not ask for any confidential data "
+                  "such as visa numbers or bank passwords within the app.",
             ),
 
             _buildCard(
-              title: "4. أمان البيانات",
+              title: "4. Data Security",
               content:
-                  "يتم تخزين جميع البيانات بشكل مشفر وآمن عبر خوادم Google Firebase، ونحرص على تحديث أنظمة الأمان بشكل دوري لضمان أقصى حماية.",
+                  "All data is stored securely and encrypted via Google Firebase servers, and we ensure security systems are updated regularly to ensure maximum protection.",
             ),
 
             _buildCard(
-              title: "5. الفترة التجريبية والاشتراك",
+              title: "5. Trial Period & Subscription",
               content:
-                  "يمنح Invento كل مستخدم جديد فترة تجريبية لمدة 7 أيام. "
-                  "بعد انتهاء هذه الفترة، يتوقف التطبيق تلقائياً، ويجب التواصل مع الإدارة عبر واتساب "
-                  "لتجديد الاشتراك الشهري للاستمرار في الوصول لبيانات مخزنك.",
+                  "Invento grants every new user a 7-day trial period. "
+                  "After this period ends, the app stops automatically, and you must contact management via WhatsApp "
+                  "to renew the monthly subscription to continue accessing your stock data.",
             ),
 
             const SizedBox(height: 12),
@@ -106,7 +106,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 ),
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
-                  "فهمت ذلك، رجوع",
+                  "I understand, Back",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

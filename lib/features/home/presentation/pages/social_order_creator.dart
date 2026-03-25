@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:invento/features/home/presentation/pages/create_order_screen.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SmartOrderCreator extends StatefulWidget {
   const SmartOrderCreator({super.key});
@@ -28,11 +29,11 @@ class _SmartOrderCreatorState extends State<SmartOrderCreator> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("المساعد الذكي"),
+        title: Text(AppLocalizations.of(context)!.smart_assistant),
         actions: [
           _buildPlatformIcon(
-            FontAwesomeIcons.facebookMessenger,
-            "https://www.messenger.com/",
+            FontAwesomeIcons.facebook,
+            "https://www.facebook.com/",
           ),
           _buildPlatformIcon(
             FontAwesomeIcons.instagram,

@@ -6,7 +6,7 @@ class CalculateProfitUseCase {
 
     double profit = 0;
     for (var item in order.items) {
-      // الربح = (سعر البيع - التكلفة) * الكمية
+      // Profit = (selling price - cost) * quantity
       profit +=
           (item.priceAtTimeOfOrder - item.costPriceAtTimeOfOrder) *
           item.quantity;
@@ -14,7 +14,7 @@ class CalculateProfitUseCase {
     return profit;
   }
 
-  // حساب إجمالي أرباح قائمة (مثلاً الشهر) بعد استبعاد الملغي
+  // Calculate total profit for a list after excluding cancelled orders
   double executeTotal(List<OrderEntity> orders) {
     return orders
         .where((o) => o.status != OrderStatus.cancelled)

@@ -43,12 +43,10 @@ service cloud.firestore {
       /// Admin has full access to all merchants.
       allow read: if isOwner(merchantId) || isAdmin();
 
-      /// Allow a user to create their own merchant document on sign-up.
       allow create: if isOwner(merchantId)
                     && isNonEmptyString(request.resource.data.email)
                     && isNonEmptyString(request.resource.data.storeName)
                     && isNonEmptyString(request.resource.data.city)
-                    && isNonEmptyString(request.resource.data.address)
                     // The uid field must match the document ID and the caller's uid.
                     && request.resource.data.uid == merchantId;
 

@@ -22,7 +22,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   String get _currentUserId {
     final user = auth.currentUser;
-    if (user == null) throw Exception("يجب تسجيل الدخول أولاً");
+    if (user == null) throw Exception("User must be logged in first");
     return user.uid;
   }
 
@@ -35,7 +35,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
       await _productsCollection.add(data);
     } catch (e) {
-      throw Exception("خطأ في إضافة المنتج: $e");
+      throw Exception("Error adding product: $e");
     }
   }
 
@@ -52,7 +52,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           .map((doc) => ProductModel.fromSnapshot(doc))
           .toList();
     } catch (e) {
-      throw Exception("فشل جلب المنتجات: $e");
+      throw Exception("Failed to fetch products: $e");
     }
   }
 

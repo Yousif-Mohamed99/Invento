@@ -24,9 +24,9 @@ class SubscriptionPlan {
   static const List<SubscriptionPlan> plans = [
     SubscriptionPlan(
       type: PlanType.starter,
-      name: "البداية (Starter)",
-      description: "التاجر المبتدئ (جرب قبل ما تشتري)",
-      price: "مجاني",
+      name: "Starter",
+      description: "Beginner Merchant (Try before you buy)",
+      price: "Free",
       productLimit: 10,
       orderLimit: 20,
       hasReports: false,
@@ -34,19 +34,19 @@ class SubscriptionPlan {
     ),
     SubscriptionPlan(
       type: PlanType.growth,
-      name: "النمو (Growth)",
-      description: "التاجر المستقر (بيحتاج تنظيم)",
-      price: "300 ج.م",
+      name: "Growth",
+      description: "Established Merchant (Needs organization)",
+      price: "300 EGP",
       productLimit: 20,
       orderLimit: -1, // Unlimited
       hasReports: true,
-      hasSpecialSupport: false,
+      hasSpecialSupport: true,
     ),
     SubscriptionPlan(
       type: PlanType.pro,
-      name: "الاحترافية (Pro)",
-      description: "المتاجر الكبيرة (Brand)",
-      price: "500 ج.م",
+      name: "Pro",
+      description: "Large Stores (Brand)",
+      price: "500 EGP",
       productLimit: -1, // Unlimited
       orderLimit: -1, // Unlimited
       hasReports: true,
